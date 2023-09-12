@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net7.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+
+		<Authors>2code</Authors>
+		<PackageProjectUrl>https://github.com/2code-it/Code2.Data.GeoIP</PackageProjectUrl>
+		<PackageTags>geo location ip address maxmind</PackageTags>
+		<RepositoryUrl>https://github.com/2code-it/Code2.Data.GeoIP.git</RepositoryUrl>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<Description>Service build around maxmind geoip csv files</Description>
+		<Title>$(AssemblyName)</Title>
+		<PackageLicenseExpression>BSD-2-Clause</PackageLicenseExpression>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Code2.Tools.Csv" Version="0.1.4" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Include="..\..\README.md">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+	</ItemGroup>
+
+</Project>

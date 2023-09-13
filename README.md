@@ -20,7 +20,7 @@ var options = new GeoIPServiceOptions()
 };
 
 public class MyBlock: BlockBase {public int AccuracyRadius {get;set;} }
-public class MyLocation: LocationBase {public int CityName {get;set;} }
+public class MyLocation: LocationBase {public string? CityName {get;set;} }
 var service = new GeoIPService<MyBlock, MyLocation>(options);
 service.Load();
 ```

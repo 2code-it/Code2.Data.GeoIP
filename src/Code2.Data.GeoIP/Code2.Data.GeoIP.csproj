@@ -7,7 +7,7 @@
 
 		<Authors>2code</Authors>
 		<PackageProjectUrl>https://github.com/2code-it/Code2.Data.GeoIP</PackageProjectUrl>
-		<PackageTags>geo location ip address maxmind</PackageTags>
+		<PackageTags>geo location ip maxmind</PackageTags>
 		<RepositoryUrl>https://github.com/2code-it/Code2.Data.GeoIP.git</RepositoryUrl>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<Description>Service build around maxmind geoip csv files</Description>

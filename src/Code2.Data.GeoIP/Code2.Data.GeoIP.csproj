@@ -16,7 +16,17 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Code2.Tools.Csv" Version="0.1.4" />
+	  <None Remove="GeoIPServiceOptions.json" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Content Include="GeoIPServiceOptions.json">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </Content>
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Code2.Tools.Csv" Version="0.1.28" />
 	</ItemGroup>
 
 	<ItemGroup>

@@ -2,9 +2,14 @@
 {
 	public class GeoIPServiceOptions
 	{
-		public string? CsvBlocksFileIPv4 { get; set; }
-		public string? CsvBlocksFileIPv6 { get; set; }
-		public string? CsvLocationsFile { get; set; }
-		public int? CsvReaderChunkSize { get; set; }
+		public string? MaxmindLicenseKey { get; set; }
+		public string? MaxmindEdition { get; set; }
+		public string CsvDownloadUrl { get; set; } = default!;
+		public bool UseDownloadHashCheck { get; set; }
+		public string CsvDataDirectory { get; set; } = default!;
+		public string? CsvBlocksIPv4FileFilter { get; set; }
+		public string? CsvBlocksIPv6FileFilter { get; set; }
+		public string? CsvLocationsFileFilter { get; set; }
+		public int CsvReaderChunkSize { get; set; }
 	}
 }

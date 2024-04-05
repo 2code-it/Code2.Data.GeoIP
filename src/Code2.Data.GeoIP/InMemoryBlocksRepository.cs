@@ -1,15 +1,14 @@
-﻿using System.Collections.Generic;
-using System.Linq.Expressions;
-
-namespace Code2.Data.GeoIP
+﻿namespace Code2.Data.GeoIP
 {
 	public class InMemoryBlocksRepository<T> : IRepository<T, UInt128>
 		where T : BlockBase
 	{
 		private readonly List<T[]> _items = new List<T[]>();
-		
+
+		public bool HasData => _items.Count > 0;
+
 		public IEnumerable<T> Get(Func<T, bool>? filter = null)
-			=> filter is null?_items.SelectMany(x=>x): _items.SelectMany(x => x).Where(filter);
+			=> filter is null ? _items.SelectMany(x => x) : _items.SelectMany(x => x).Where(filter);
 
 		public T? GetSingle(UInt128 id)
 		{
@@ -35,6 +34,11 @@ namespace Code2.Data.GeoIP
 		public void RemoveSingle(UInt128 id)
 		{
 			throw new NotImplementedException();
+		}
+
+		public void RemoveAll()
+		{
+			_items.Clear();
 		}
 	}
 }

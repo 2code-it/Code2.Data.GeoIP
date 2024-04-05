@@ -10,5 +10,10 @@
 		Tblock? GetBlock(string ipAddress);
 		Tlocation? GetLocation(int geoNameId);
 		void Load();
+		void UpdateFiles();
+		void UpdateFiles(string zipFilePath);
+		Task LoadAsync();
+		Task UpdateFilesAsync();
+		Task UpdateFilesAsync(string zipFilePath);
 	}
 }

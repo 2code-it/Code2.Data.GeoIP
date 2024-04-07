@@ -58,21 +58,17 @@ namespace Code2.Data.GeoIP
 
 		public void Load()
 		{
-			string dataDirectory = _fileSystem.PathGetFullPath(Options.CsvDataDirectory);
-			string[] files = _fileSystem.DirectoryGetFiles(dataDirectory, "*.*");
-			string? ipv4BlocksFilePath = Options.CsvBlocksIPv4FileFilter is null ? null : files.FirstOrDefault(x => x.Contains(Options.CsvBlocksIPv4FileFilter));
-			string? ipv6BlocksFilePath = Options.CsvBlocksIPv6FileFilter is null ? null : files.FirstOrDefault(x => x.Contains(Options.CsvBlocksIPv6FileFilter));
-			string? locationsFilePath = Options.CsvLocationsFileFilter is null ? null : files.FirstOrDefault(x => x.Contains(Options.CsvLocationsFileFilter));
+			var files = GetCsvFilePaths();
 
-			if (ipv4BlocksFilePath is null && ipv6BlocksFilePath is null)
+			if (files.ipv4block is null && files.ipv6block is null)
 				throw new InvalidOperationException("Csv blocks file not found");
 
 			if (_blocksRepository.HasData) _blocksRepository.RemoveAll();
 			if (_locationsRepository.HasData) _locationsRepository.RemoveAll();
 
-			AddCsvFileToRepository(_blocksRepository, ipv4BlocksFilePath, Options.CsvReaderChunkSize);
-			AddCsvFileToRepository(_blocksRepository, ipv6BlocksFilePath, Options.CsvReaderChunkSize);
-			AddCsvFileToRepository(_locationsRepository, locationsFilePath, Options.CsvReaderChunkSize);
+			AddCsvFileToRepository(_blocksRepository, files.ipv4block, Options.CsvReaderChunkSize);
+			AddCsvFileToRepository(_blocksRepository, files.ipv6block, Options.CsvReaderChunkSize);
+			AddCsvFileToRepository(_locationsRepository, files.locations, Options.CsvReaderChunkSize);
 		}
 
 		public void UpdateFiles()
@@ -120,6 +116,14 @@ namespace Code2.Data.GeoIP
 			ExtractZipEntryIfExists(zipFilePath, Options.CsvLocationsFileFilter, dataDirectory);
 		}
 
+		public DateTime GetLastFileWriteTime()
+		{
+			var files = GetCsvFilePaths();
+			string[] fileArray = new[] { files.ipv4block, files.ipv6block, files.locations }.Where(x => x is not null).ToArray()!;
+			if(fileArray.Length == 0)return DateTime.MinValue;
+			return fileArray.Select(x => _fileSystem.FileGetLastWriteTime(x!)).Max();
+		}
+
 		public async Task LoadAsync()
 			=> await Task.Run(Load);
 
@@ -128,6 +132,16 @@ namespace Code2.Data.GeoIP
 
 		public async Task UpdateFilesAsync(string zipFilePath)
 			=> await Task.Run(() => UpdateFiles(zipFilePath));
+
+		private (string? ipv4block, string? ipv6block, string? locations) GetCsvFilePaths()
+		{
+			string dataDirectory = _fileSystem.PathGetFullPath(Options.CsvDataDirectory);
+			string[] files = _fileSystem.DirectoryGetFiles(dataDirectory, "*.*");
+			string? ipv4BlocksFilePath = Options.CsvBlocksIPv4FileFilter is null ? null : files.FirstOrDefault(x => x.Contains(Options.CsvBlocksIPv4FileFilter));
+			string? ipv6BlocksFilePath = Options.CsvBlocksIPv6FileFilter is null ? null : files.FirstOrDefault(x => x.Contains(Options.CsvBlocksIPv6FileFilter));
+			string? locationsFilePath = Options.CsvLocationsFileFilter is null ? null : files.FirstOrDefault(x => x.Contains(Options.CsvLocationsFileFilter));
+			return (ipv4BlocksFilePath, ipv6BlocksFilePath, locationsFilePath);
+		}
 
 		private void ExtractZipEntryIfExists(string zipFilePath, string? nameFilter, string destinationDirectory)
 		{
@@ -168,11 +182,10 @@ namespace Code2.Data.GeoIP
 			}
 		}
 
-		public GeoIPServiceOptions GetDefaultOptions()
+		public static GeoIPServiceOptions GetDefaultOptions()
 		{
-			string filePath = _fileSystem.PathGetFullPath($"./{nameof(GeoIPServiceOptions)}.json");
-			string json = _fileSystem.FileReadAllText(filePath);
-			return JsonSerializer.Deserialize<GeoIPServiceOptions>(json)!;
+			using Stream stream = typeof(GeoIPServiceOptions).Assembly.GetManifestResourceStream(typeof(GeoIPServiceOptions), $"{nameof(GeoIPServiceOptions)}.json")!;
+			return JsonSerializer.Deserialize<GeoIPServiceOptions>(stream)!;
 		}
 	}
 }

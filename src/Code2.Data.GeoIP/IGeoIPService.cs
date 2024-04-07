@@ -15,6 +15,7 @@ namespace Code2.Data.GeoIP
 		void Load();
 		void UpdateFiles();
 		void UpdateFiles(string zipFilePath);
+		DateTime GetLastFileWriteTime();
 		Task LoadAsync();
 		Task UpdateFilesAsync();
 		Task UpdateFilesAsync(string zipFilePath);

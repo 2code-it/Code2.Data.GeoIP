@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 
 namespace Code2.Data.GeoIP.Internals
 {
@@ -11,6 +12,7 @@ namespace Code2.Data.GeoIP.Internals
 		void FileDelete(string path);
 		bool FileExists(string path);
 		string FileReadAllText(string path);
+		DateTime FileGetLastWriteTime(string path);
 		string PathGetFullPath(string path);
 		string PathCombine(params string[] paths);
 		string[] DirectoryGetFiles(string path, string search);

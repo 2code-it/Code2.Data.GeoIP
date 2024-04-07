@@ -29,6 +29,9 @@ namespace Code2.Data.GeoIP.Internals
 		public bool FileExists(string path)
 			=> File.Exists(path);
 
+		public DateTime FileGetLastWriteTime(string path)
+			=> File.GetLastWriteTime(path);
+
 		public string FileReadAllText(string path)
 			=> File.ReadAllText(path);
 

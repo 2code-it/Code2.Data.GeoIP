@@ -1,4 +1,8 @@
-﻿namespace Code2.Data.GeoIP
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace Code2.Data.GeoIP
 {
 	public class InMemoryBlocksRepository<T> : IRepository<T, UInt128>
 		where T : BlockBase

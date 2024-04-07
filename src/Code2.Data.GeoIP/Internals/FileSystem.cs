@@ -1,4 +1,7 @@
-﻿using System.IO.Compression;
+﻿using System;
+using System.IO;
+using System.IO.Compression;
+using System.Linq;
 using System.Security.Cryptography;
 
 namespace Code2.Data.GeoIP.Internals

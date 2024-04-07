@@ -1,4 +1,8 @@
-﻿namespace Code2.Data.GeoIP
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace Code2.Data.GeoIP
 {
 	public class InMemoryLocationsRepository<T> : IRepository<T, int>
 		where T : LocationBase

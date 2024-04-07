@@ -1,4 +1,7 @@
-﻿using System.Net;
+﻿using System;
+using System.IO;
+using System.Net;
+using System.Net.Http;
 
 namespace Code2.Data.GeoIP.Internals
 {

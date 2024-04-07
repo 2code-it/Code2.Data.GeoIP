@@ -1,4 +1,7 @@
-﻿namespace Code2.Data.GeoIP
+﻿using System;
+using System.Collections.Generic;
+
+namespace Code2.Data.GeoIP
 {
 	public interface IRepository<T, Tid>
 	{

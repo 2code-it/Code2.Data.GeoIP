@@ -1,4 +1,6 @@
-﻿namespace Code2.Data.GeoIP.Internals
+﻿using System.IO;
+
+namespace Code2.Data.GeoIP.Internals
 {
 	internal interface IFileSystem
 	{

@@ -1,4 +1,7 @@
-﻿namespace Code2.Data.GeoIP
+﻿using System;
+using System.Threading.Tasks;
+
+namespace Code2.Data.GeoIP
 {
 	public interface IGeoIPService<Tblock, Tlocation>
 		where Tblock : BlockBase, new()

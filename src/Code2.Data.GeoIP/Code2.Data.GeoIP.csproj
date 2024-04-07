@@ -2,7 +2,7 @@
 
 	<PropertyGroup>
 		<TargetFramework>net7.0</TargetFramework>
-		<ImplicitUsings>enable</ImplicitUsings>
+		<ImplicitUsings>disable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 
 		<Authors>2code</Authors>
@@ -13,6 +13,7 @@
 		<Description>Service build around maxmind geoip csv files</Description>
 		<Title>$(AssemblyName)</Title>
 		<PackageLicenseExpression>BSD-2-Clause</PackageLicenseExpression>
+		<AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb;.json</AllowedOutputExtensionsInPackageBuildOutputFolder>
 	</PropertyGroup>
 
 	<ItemGroup>

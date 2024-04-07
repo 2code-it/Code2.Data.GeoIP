@@ -1,4 +1,7 @@
-﻿namespace Code2.Data.GeoIP.Internals
+﻿using System;
+using System.IO;
+
+namespace Code2.Data.GeoIP.Internals
 {
 	internal interface INetworkUtility
 	{

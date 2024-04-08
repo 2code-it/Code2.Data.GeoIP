@@ -65,6 +65,11 @@ namespace Code2.Data.GeoIP
 
 			if (_blocksRepository.HasData) _blocksRepository.RemoveAll();
 			if (_locationsRepository.HasData) _locationsRepository.RemoveAll();
+			if(Options.CsvReaderErrorLogFile is not null)
+			{
+				string logFilePath = _fileSystem.PathGetFullPath(Options.CsvReaderErrorLogFile);
+				if(_fileSystem.FileExists(logFilePath)) _fileSystem.FileDelete(logFilePath);
+			}
 
 			AddCsvFileToRepository(_blocksRepository, files.ipv4block, Options.CsvReaderChunkSize);
 			AddCsvFileToRepository(_blocksRepository, files.ipv6block, Options.CsvReaderChunkSize);
@@ -180,12 +185,25 @@ namespace Code2.Data.GeoIP
 			using StreamReader reader = _fileSystem.FileOpenText(filePath);
 			ICsvReader<T> csvReader = _csvReaderFactory.Create<T>(reader);
 			csvReader.Options.Header = csvReader.ReadLine();
+			List<string> errorList = new List<string>();
+			if(Options.CsvReaderErrorLogFile is not null)
+			{
+				csvReader.Error += (object? sender, UnhandledExceptionEventArgs args) => { errorList.Add(((Exception)args.ExceptionObject).Message); };
+			}
+			
 			while (!csvReader.EndOfStream)
 			{
 				T[] items = csvReader.ReadObjects(chunkSize);
 				if (items.Length == 0) continue;
 				if (items[0] is ISubnet) UpdateSubnet(items.Select(x => (ISubnet)x!));
 				repository.Add(items);
+			}
+
+			if (errorList.Count > 0)
+			{
+				errorList.Insert(0, $"=={filePath}==");
+				string logFilePath = _fileSystem.PathGetFullPath(Options.CsvReaderErrorLogFile!);
+				_fileSystem.FileAppendAllLines(logFilePath, errorList);
 			}
 		}
 

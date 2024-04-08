@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -34,6 +36,9 @@ namespace Code2.Data.GeoIP.Internals
 
 		public string FileReadAllText(string path)
 			=> File.ReadAllText(path);
+
+		public void FileAppendAllLines(string path, IEnumerable<string> contents)
+			=> File.AppendAllLines(path, contents);
 
 		public string PathCombine(params string[] paths)
 			=> Path.Combine(paths);

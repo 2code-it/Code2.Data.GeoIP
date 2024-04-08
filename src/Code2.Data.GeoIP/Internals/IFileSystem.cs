@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 
 namespace Code2.Data.GeoIP.Internals
@@ -13,6 +14,7 @@ namespace Code2.Data.GeoIP.Internals
 		bool FileExists(string path);
 		string FileReadAllText(string path);
 		DateTime FileGetLastWriteTime(string path);
+		void FileAppendAllLines(string path, IEnumerable<string> contents);
 		string PathGetFullPath(string path);
 		string PathCombine(params string[] paths);
 		string[] DirectoryGetFiles(string path, string search);

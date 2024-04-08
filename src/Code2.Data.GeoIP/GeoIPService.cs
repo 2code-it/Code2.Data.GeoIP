@@ -81,7 +81,6 @@ namespace Code2.Data.GeoIP
 				.Replace($"$({nameof(Options.MaxmindEdition)})", Options.MaxmindEdition);
 
 			string dataDirectory = _fileSystem.PathGetFullPath(Options.CsvDataDirectory);
-			_fileSystem.DirectoryCreate(dataDirectory);
 			string downloadFilePath = _fileSystem.PathCombine(dataDirectory, $"{Options.MaxmindEdition}.zip");
 
 			if (_fileSystem.FileExists(downloadFilePath)) _fileSystem.FileDelete(downloadFilePath);
@@ -109,6 +108,7 @@ namespace Code2.Data.GeoIP
 
 		public void UpdateFiles(string zipFilePath)
 		{
+			EnsureDataDirectoryExists();
 			string dataDirectory = _fileSystem.PathGetFullPath(Options.CsvDataDirectory);
 
 			ExtractZipEntryIfExists(zipFilePath, Options.CsvBlocksIPv4FileFilter, dataDirectory);
@@ -133,8 +133,15 @@ namespace Code2.Data.GeoIP
 		public async Task UpdateFilesAsync(string zipFilePath)
 			=> await Task.Run(() => UpdateFiles(zipFilePath));
 
+		private void EnsureDataDirectoryExists()
+		{
+			string dataDir = _fileSystem.PathGetFullPath(Options.CsvDataDirectory);
+			_fileSystem.DirectoryCreate(dataDir);
+		}
+
 		private (string? ipv4block, string? ipv6block, string? locations) GetCsvFilePaths()
 		{
+			EnsureDataDirectoryExists();
 			string dataDirectory = _fileSystem.PathGetFullPath(Options.CsvDataDirectory);
 			string[] files = _fileSystem.DirectoryGetFiles(dataDirectory, "*.*");
 			string? ipv4BlocksFilePath = Options.CsvBlocksIPv4FileFilter is null ? null : files.FirstOrDefault(x => x.Contains(Options.CsvBlocksIPv4FileFilter));

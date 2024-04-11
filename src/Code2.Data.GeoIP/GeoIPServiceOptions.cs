@@ -4,9 +4,9 @@
 	{
 		public string? MaxmindLicenseKey { get; set; }
 		public string? MaxmindEdition { get; set; }
-		public string CsvDownloadUrl { get; set; } = default!;
+		public string CsvDownloadUrl { get; set; } = string.Empty;
 		public bool UseDownloadHashCheck { get; set; }
-		public string CsvDataDirectory { get; set; } = default!;
+		public string CsvDataDirectory { get; set; } = string.Empty;
 		public string? CsvBlocksIPv4FileFilter { get; set; }
 		public string? CsvBlocksIPv6FileFilter { get; set; }
 		public string? CsvLocationsFileFilter { get; set; }

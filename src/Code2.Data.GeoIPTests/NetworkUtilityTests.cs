@@ -1,10 +1,5 @@
 ﻿using Code2.Data.GeoIP.Internals;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Code2.Data.GeoIPTests
 {
@@ -24,7 +19,7 @@ namespace Code2.Data.GeoIPTests
 			NetworkUtility networkUtility = new NetworkUtility();
 
 			var result = networkUtility.GetRangeFromCidr(cidr);
-			
+
 			if (isIPv4) maskBits += 96;
 			UInt128 expectedRangeSize = (UInt128)Math.Pow(2, 128 - maskBits) - 1;
 			UInt128 rangeSize = result.end - result.begin;

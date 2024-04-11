@@ -1,14 +1,8 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Code2.Data.GeoIP;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Code2.Data.GeoIP;
 using Code2.Data.GeoIP.Internals;
 using Code2.Tools.Csv;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
-using System.Net.Http.Headers;
 
 namespace Code2.Data.GeoIPTests
 {
@@ -46,7 +40,7 @@ namespace Code2.Data.GeoIPTests
 			service.Options.CsvBlocksIPv4FileFilter = "blocksipv4.csv";
 			service.Options.CsvBlocksIPv6FileFilter = "blocksipv6.csv";
 			service.Options.CsvLocationsFileFilter = "locations.csv";
-			
+
 			service.Load();
 
 			_fileSystem.Received(3).FileOpenText(Arg.Any<string>());
@@ -83,7 +77,7 @@ namespace Code2.Data.GeoIPTests
 			_fileSystem.DirectoryGetFiles(Arg.Any<string>(), Arg.Any<string>()).Returns(new[] { "some-blocksipv4.csv" });
 			service.Options.CsvBlocksIPv4FileFilter = "blocksipv4.csv";
 			BlockBase block = new BlockBase() { Network = "0.0.0.1/24" };
-			_csvReaderBlock.ReadObjects(Arg.Any<int>()).Returns(new[] {block });
+			_csvReaderBlock.ReadObjects(Arg.Any<int>()).Returns(new[] { block });
 
 			service.Load();
 
@@ -188,7 +182,7 @@ namespace Code2.Data.GeoIPTests
 			_networkUtility.HttpGetStream(Arg.Any<string>()).Returns(x => httpStream);
 			_networkUtility.HttpGetString(Arg.Any<string>()).Returns("aadd00 ?");
 			_fileSystem.FileGetSha256Hex(Arg.Any<Stream>()).Returns("AADD01");
-			
+
 			service.UpdateFiles();
 
 			_fileSystem.Received(1).ZipArchiveExtractEntryTo(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>());
@@ -241,14 +235,14 @@ namespace Code2.Data.GeoIPTests
 
 		private GeoIPService<BlockBase, LocationBase> GetGeoIPService(bool resetDependencies = true)
 		{
-			if(resetDependencies)ResetDependencies();
+			if (resetDependencies) ResetDependencies();
 			return new GeoIPService<BlockBase, LocationBase>(_options, _blocksRepository, _locationsRepository, _networkUtility, _fileSystem, _csvReaderFactory);
 		}
 
 		private void ResetDependencies()
 		{
 			_options = new();
-			
+
 			_blocksRepository = Substitute.For<IRepository<BlockBase, UInt128>>();
 			_locationsRepository = Substitute.For<IRepository<LocationBase, int>>();
 			_networkUtility = Substitute.For<INetworkUtility>();

@@ -5,7 +5,7 @@ The csv files can be downloaded after registering at https://www.maxmind.com/.
 ## options
 - MaxmindLicenceKey, can be obtained after registering a free maxmind account, default: ""
 - MaxmindEdition, edition specifier GeoLite2-Country-CSV, GeoLite2-City-CSV, ..etc, default: "GeoLite2-City-CSV"
-- CsvDownloadUrl, csv download url template with placeholders for $(MaxmindEdition) and $(MaxmindLicenceKey), default: <maxmind-csv-download-url>
+- CsvDownloadUrl, csv download url template with placeholders for \$(MaxmindEdition) and \$(MaxmindLicenceKey), default: <maxmind-csv-download-url>
 - CsvDataDirectory, directory to store the csv files, default: "./data"
 - CsvBlocksIPv4FileFilter, csv ipv4 blocks *file filter, default: "Blocks-IPv4.csv"
 - CsvBlocksIPv6FileFilter, csv ipv6 blocks *file filter, default: "Blocks-IPv6.csv"

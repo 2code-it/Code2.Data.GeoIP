@@ -27,7 +27,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Code2.Tools.Csv" Version="0.1.30" />
+		<PackageReference Include="Code2.Tools.Csv" Version="0.1.31" />
 	</ItemGroup>
 
 	<ItemGroup>

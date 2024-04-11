@@ -43,37 +43,52 @@ namespace Code2.Data.GeoIP
 		private readonly INetworkUtility _networkUtility;
 		private readonly IFileSystem _fileSystem;
 		private readonly ICsvReaderFactory _csvReaderFactory;
+		private readonly object _lock = new object();
 
 		public GeoIPServiceOptions Options { get; private set; }
+		public bool HasData => _blocksRepository.HasData;
 
 		public Tblock? GetBlock(UInt128 ipNumber)
-			=> _blocksRepository.GetSingle(ipNumber);
+		{
+			lock (_lock)
+			{
+				return _blocksRepository.GetSingle(ipNumber);
+			}
+		}
 
 		public Tblock? GetBlock(string ipAddress)
 			=> GetBlock(_networkUtility.GetIpNumberFromAddress(ipAddress));
 
 		public Tlocation? GetLocation(int geoNameId)
-			=> _locationsRepository.GetSingle(geoNameId);
+		{
+			lock (_lock)
+			{
+				return _locationsRepository.GetSingle(geoNameId);
+			}
+		}
 
 
 		public void Load()
 		{
-			var files = GetCsvFilePaths();
-
-			if (files.ipv4block is null && files.ipv6block is null)
-				throw new InvalidOperationException("Csv blocks file not found");
-
-			if (_blocksRepository.HasData) _blocksRepository.RemoveAll();
-			if (_locationsRepository.HasData) _locationsRepository.RemoveAll();
-			if(Options.CsvReaderErrorLogFile is not null)
+			lock (_lock)
 			{
-				string logFilePath = _fileSystem.PathGetFullPath(Options.CsvReaderErrorLogFile);
-				if(_fileSystem.FileExists(logFilePath)) _fileSystem.FileDelete(logFilePath);
-			}
+				var files = GetCsvFilePaths();
 
-			AddCsvFileToRepository(_blocksRepository, files.ipv4block, Options.CsvReaderChunkSize);
-			AddCsvFileToRepository(_blocksRepository, files.ipv6block, Options.CsvReaderChunkSize);
-			AddCsvFileToRepository(_locationsRepository, files.locations, Options.CsvReaderChunkSize);
+				if (files.ipv4block is null && files.ipv6block is null)
+					throw new InvalidOperationException("Csv blocks file not found");
+
+				if (_blocksRepository.HasData) _blocksRepository.RemoveAll();
+				if (_locationsRepository.HasData) _locationsRepository.RemoveAll();
+				if (Options.CsvReaderErrorLogFile is not null)
+				{
+					string logFilePath = _fileSystem.PathGetFullPath(Options.CsvReaderErrorLogFile);
+					if (_fileSystem.FileExists(logFilePath)) _fileSystem.FileDelete(logFilePath);
+				}
+
+				AddCsvFileToRepository(_blocksRepository, files.ipv4block, Options.CsvReaderChunkSize);
+				AddCsvFileToRepository(_blocksRepository, files.ipv6block, Options.CsvReaderChunkSize);
+				AddCsvFileToRepository(_locationsRepository, files.locations, Options.CsvReaderChunkSize);
+			}
 		}
 
 		public void UpdateFiles()

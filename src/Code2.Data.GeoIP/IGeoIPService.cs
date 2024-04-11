@@ -8,6 +8,7 @@ namespace Code2.Data.GeoIP
 		where Tlocation : LocationBase, new()
 	{
 		GeoIPServiceOptions Options { get; }
+		bool HasData { get; }
 
 		Tblock? GetBlock(UInt128 ipNumber);
 		Tblock? GetBlock(string ipAddress);

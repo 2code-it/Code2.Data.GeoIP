@@ -11,7 +11,9 @@ The csv files can be downloaded after registering at https://www.maxmind.com/.
 - CsvBlocksIPv6FileFilter, csv ipv6 blocks *file filter, default: "Blocks-IPv6.csv"
 - CsvLocationsFileFilter, csv locations *file filter, default: "Locations-en.csv"
 - CsvReaderChunkSize, amount of lines to read and process, default=5000
-- CsvReaderErrorLogFile, log file for csv read errors, defualt: "./data/csv_error.txt"
+- CsvReaderErrorLogFile, log file for csv read errors, default: "./data/csv_error.txt"
+- CsvUpdateIntervalInDays, automatic update interval in days related to file age, default: 10
+- AutoLoad, loads the files upon initialization when HasData=false, default: false
 
 *file filter is used search for a specific file and can be set to null to prevent the file from loading
 

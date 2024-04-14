@@ -20,5 +20,8 @@ namespace Code2.Data.GeoIP
 		Task LoadAsync();
 		Task UpdateFilesAsync();
 		Task UpdateFilesAsync(string zipFilePath);
+
+		void Configure(Action<GeoIPServiceOptions> configure);
+		void Configure(GeoIPServiceOptions options);
 	}
 }

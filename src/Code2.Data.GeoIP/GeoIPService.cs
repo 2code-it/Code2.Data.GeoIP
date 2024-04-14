@@ -241,9 +241,9 @@ namespace Code2.Data.GeoIP
 			EnsureDataDirectoryExists();
 			string dataDirectory = _fileSystem.PathGetFullPath(Options.CsvDataDirectory!);
 			string[] files = _fileSystem.DirectoryGetFiles(dataDirectory, "*.*");
-			string? ipv4BlocksFilePath = Options.CsvBlocksIPv4FileFilter is null ? null : files.FirstOrDefault(x => x.Contains(Options.CsvBlocksIPv4FileFilter));
-			string? ipv6BlocksFilePath = Options.CsvBlocksIPv6FileFilter is null ? null : files.FirstOrDefault(x => x.Contains(Options.CsvBlocksIPv6FileFilter));
-			string? locationsFilePath = Options.CsvLocationsFileFilter is null ? null : files.FirstOrDefault(x => x.Contains(Options.CsvLocationsFileFilter));
+			string? ipv4BlocksFilePath = string.IsNullOrEmpty(Options.CsvBlocksIPv4FileFilter) ? null : files.FirstOrDefault(x => x.Contains(Options.CsvBlocksIPv4FileFilter));
+			string? ipv6BlocksFilePath = string.IsNullOrEmpty(Options.CsvBlocksIPv6FileFilter) ? null : files.FirstOrDefault(x => x.Contains(Options.CsvBlocksIPv6FileFilter));
+			string? locationsFilePath = string.IsNullOrEmpty(Options.CsvLocationsFileFilter) ? null : files.FirstOrDefault(x => x.Contains(Options.CsvLocationsFileFilter));
 			return (ipv4BlocksFilePath, ipv6BlocksFilePath, locationsFilePath);
 		}
 

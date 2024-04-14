@@ -176,6 +176,8 @@ namespace Code2.Data.GeoIPTests
 			service.Options.MaxmindLicenseKey = "key1";
 			service.Options.CsvDownloadUrl = "/";
 			service.Options.UseDownloadHashCheck = false;
+			service.Options.CsvBlocksIPv6FileFilter = string.Empty;
+			service.Options.CsvLocationsFileFilter = string.Empty;
 			_fileSystem.DirectoryGetFiles(Arg.Any<string>(), Arg.Any<string>()).Returns(new[] { "some-blocksipv4.csv" });
 			service.Options.CsvBlocksIPv4FileFilter = "blocksipv4.csv";
 			_fileSystem.FileCreate(Arg.Any<string>()).Returns(x => fileStream);

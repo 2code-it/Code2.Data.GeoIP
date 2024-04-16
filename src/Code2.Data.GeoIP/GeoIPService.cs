@@ -215,7 +215,7 @@ namespace Code2.Data.GeoIP
 
 		private async void OnUpdateTimerTick(object? state)
 		{
-			if ((DateTime.Now - GetLastFileWriteTime()).TotalDays <= Options.CsvUpdateIntervalInDays) return;
+			if (!ShouldUpdate()) return;
 			await UpdateFilesAsync();
 			await LoadAsync();
 		}
@@ -223,11 +223,14 @@ namespace Code2.Data.GeoIP
 		private async void AutoLoad()
 		{
 			if (HasData) return;
-			if (Options.CsvUpdateIntervalInDays > 0 && (DateTime.Now - GetLastFileWriteTime()).TotalDays <= Options.CsvUpdateIntervalInDays)
-			{
-				await UpdateFilesAsync();
-			}
+			if (ShouldUpdate()) await UpdateFilesAsync();
 			await LoadAsync();
+		}
+
+		private bool ShouldUpdate()
+		{
+			if (Options.CsvUpdateIntervalInDays == 0) return false;
+			return GetLastFileWriteTime().AddDays(Options.CsvUpdateIntervalInDays) < DateTime.Now;
 		}
 
 		private void EnsureDataDirectoryExists()

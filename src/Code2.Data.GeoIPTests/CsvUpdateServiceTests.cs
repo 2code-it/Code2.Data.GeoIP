@@ -34,13 +34,14 @@ namespace Code2.Data.GeoIP.Tests
 		[TestMethod()]
 		[DataRow(-75, -76, 6)]	//local file older than 3 days but no newer remote file, expect 6 hour delay
 		[DataRow(-24, -76, 24)]	//day old local file but no newer remote file, expect 24 hour delay
-		[DataRow(-5, -2, 72)]	//newer remote file, runs update and delays 72 hours
+		[DataRow(-26, -2, 72)]	//newer remote file, runs update and delays 72 hours
 		public void StartAutomaticUpdating_When_FileLastModifiedComparedToRemote_Expect_Delay(int addHoursFile, int addHoursRemote, int expectedHoursDelay)
 		{
 			Console.WriteLine("addHoursFile: {0}, addHoursRemote: {1}, expectedHoursDelay: {2}", addHoursFile, addHoursRemote, expectedHoursDelay);
 			ResetDependencies();
-			DateTime lastModifiedLocal = DateTime.Now.AddHours(addHoursFile);
-			DateTime lastModifiedRemote = DateTime.Now.AddHours(addHoursRemote);
+			DateTime dateSource = new DateTime(2000, 10, 10, 11,0,0);
+			DateTime lastModifiedLocal = dateSource.AddHours(addHoursFile);
+			DateTime lastModifiedRemote = dateSource.AddHours(addHoursRemote);
 			_fileSystem.FileExists(Arg.Any<string>()).Returns(false);
 			_fileSystem.DirectoryGetFiles(Arg.Any<string>(), Arg.Any<string>()).Returns(new[] { "blockipv4.csv" });
 			_fileSystem.FileGetLastWriteTime(Arg.Any<string>()).Returns(lastModifiedLocal);

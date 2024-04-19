@@ -63,10 +63,6 @@ namespace Code2.Data.GeoIP
 						await _taskUtility.Delay(TimeSpan.FromHours(24), _cts.Token);
 					}
 				}
-				catch (TaskCanceledException)
-				{
-					break;
-				}
 				catch (Exception ex)
 				{
 					OnError(ex);

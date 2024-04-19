@@ -8,5 +8,6 @@ namespace Code2.Data.GeoIP
 		public string? Network { get; set; }
 		public UInt128 BeginAddress { get; set; }
 		public UInt128 EndAddress { get; set; }
+		public int IsAnyCast { get; set; }
 	}
 }

@@ -20,7 +20,6 @@ namespace Code2.Data.GeoIP
 		private readonly IHttpUtility _httpUtility;
 		private readonly ITaskUtility _taskUtility;
 		private CancellationTokenSource? _cts;
-		private const int _msPerHour = 3600000;
 		private static readonly SemaphoreSlim _semaphoreFileUpdate = new SemaphoreSlim(1);
 
 
@@ -47,27 +46,31 @@ namespace Code2.Data.GeoIP
 					DateTime currentTime = DateTime.Now;
 					if (IsUpdating)
 					{
-						await _taskUtility.Delay(_msPerHour, _cts.Token);
+						await _taskUtility.Delay(TimeSpan.FromHours(1), _cts.Token);
 					}
 					else if (remoteLastModfiedDate > localLastModifiedDate)
 					{
 						await UpdateFilesAsync();
 						Update?.Invoke(this, EventArgs.Empty);
-						await _taskUtility.Delay(_msPerHour * 72, _cts.Token);
+						await _taskUtility.Delay(TimeSpan.FromHours(72), _cts.Token);
 					}
 					else if (localLastModifiedDate.AddDays(3) < currentTime)
 					{
-						await _taskUtility.Delay(_msPerHour * 6, _cts.Token);
+						await _taskUtility.Delay(TimeSpan.FromHours(6), _cts.Token);
 					}
 					else
 					{
-						await _taskUtility.Delay(_msPerHour * 24, _cts.Token);
+						await _taskUtility.Delay(TimeSpan.FromHours(24), _cts.Token);
 					}
+				}
+				catch (TaskCanceledException)
+				{
+					break;
 				}
 				catch (Exception ex)
 				{
 					OnError(ex);
-					await _taskUtility.Delay(_msPerHour, _cts.Token);
+					await _taskUtility.Delay(TimeSpan.FromHours(1), _cts.Token);
 				}
 			}
 			_cts.Dispose();

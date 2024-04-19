@@ -45,7 +45,7 @@ namespace Code2.Data.GeoIP.Tests
 			_fileSystem.DirectoryGetFiles(Arg.Any<string>(), Arg.Any<string>()).Returns(new[] { "blockipv4.csv" });
 			_fileSystem.FileGetLastWriteTime(Arg.Any<string>()).Returns(lastModifiedLocal);
 			_httpUtility.GetLastModifiedHeaderAsync(Arg.Any<string>()).Returns(lastModifiedRemote);
-			_taskUtility.Delay(Arg.Any<int>(), Arg.Any<CancellationToken>()).Returns(x => Task.Delay(10, (CancellationToken)x[1]));
+			_taskUtility.Delay(Arg.Any<TimeSpan>(), Arg.Any<CancellationToken>()).Returns(x => Task.Delay(10, (CancellationToken)x[1]));
 			CsvUpdateService csvUpdateService = new CsvUpdateService(_fileSystem, _httpUtility, _taskUtility);
 			csvUpdateService.CsvFileFilters = new[] { "blockipv4" };
 
@@ -53,7 +53,7 @@ namespace Code2.Data.GeoIP.Tests
 			Thread.Sleep(5);
 			csvUpdateService.StopAutomaticUpdating();
 
-			_taskUtility.Received(1).Delay(_msPerHour * expectedHoursDelay, Arg.Any<CancellationToken>());
+			_taskUtility.Received(1).Delay(TimeSpan.FromHours(expectedHoursDelay), Arg.Any<CancellationToken>());
 		}
 
 		[TestMethod()]
@@ -61,7 +61,7 @@ namespace Code2.Data.GeoIP.Tests
 		{
 			ResetDependencies();
 			_httpUtility.GetLastModifiedHeaderAsync(Arg.Any<string>()).Throws(new InvalidOperationException());
-			_taskUtility.Delay(Arg.Any<int>(), Arg.Any<CancellationToken>()).Returns(x => Task.Delay(10, (CancellationToken)x[1]));
+			_taskUtility.Delay(Arg.Any<TimeSpan>(), Arg.Any<CancellationToken>()).Returns(x => Task.Delay(10, (CancellationToken)x[1]));
 			CsvUpdateService csvUpdateService = new CsvUpdateService(_fileSystem, _httpUtility, _taskUtility);
 			csvUpdateService.Error += (_, _) => { };
 
@@ -69,7 +69,7 @@ namespace Code2.Data.GeoIP.Tests
 			Thread.Sleep(5);
 			csvUpdateService.StopAutomaticUpdating();
 
-			_taskUtility.Received(1).Delay(_msPerHour, Arg.Any<CancellationToken>());
+			_taskUtility.Received(1).Delay(TimeSpan.FromHours(1), Arg.Any<CancellationToken>());
 		}
 
 		private void ResetDependencies()

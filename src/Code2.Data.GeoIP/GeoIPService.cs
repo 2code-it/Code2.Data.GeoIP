@@ -137,8 +137,10 @@ namespace Code2.Data.GeoIP
 				ThrowOnInvalidUpdateOption();
 				_csvUpdateService.StartAutomaticUpdating();
 			}
-			if (Options.AutoLoad && !HasData && !_csvUpdateService.IsUpdating)
+			if (Options.AutoLoad)
 			{
+				if (HasData) return;
+				if (Options.AutoUpdate && (_csvUpdateService.IsUpdating || _csvUpdateService.GetFileLastWriteTime() == DateTime.MinValue)) return;
 				Load();
 			}
 		}
@@ -217,6 +219,7 @@ namespace Code2.Data.GeoIP
 			filePath = _fileSystem.PathGetFullPath(filePath);
 			using StreamReader reader = _fileSystem.FileOpenText(filePath);
 			ICsvReader<T> csvReader = _csvReaderFactory.Create<T>(reader);
+			csvReader.Options.IgnoreEmptyWhenDeserializing = true;
 			csvReader.Options.Header = csvReader.ReadLine();
 			List<string> errorList = new List<string>();
 			if (Options.CsvReaderErrorLogFile is not null)

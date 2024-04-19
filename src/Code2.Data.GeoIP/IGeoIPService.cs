@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Code2.Data.GeoIP
@@ -18,7 +19,9 @@ namespace Code2.Data.GeoIP
 		void Configure(GeoIPServiceOptions options);
 		Tblock? GetBlock(string ipAddress);
 		Tblock? GetBlock(UInt128 ipNumber);
+		IEnumerable<Tblock> GetBlocks(Func<Tblock, bool> filter);
 		Tlocation? GetLocation(int geoNameId);
+		IEnumerable<Tlocation> GetLocations(Func<Tlocation, bool> filter);
 		Task LoadAsync();
 		Task UpdateFilesAsync();
 	}

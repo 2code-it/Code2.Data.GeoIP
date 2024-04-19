@@ -71,11 +71,27 @@ namespace Code2.Data.GeoIP
 		public Tblock? GetBlock(string ipAddress)
 			=> GetBlock(_networkUtility.GetIpNumberFromAddress(ipAddress));
 
+		public IEnumerable<Tblock> GetBlocks(Func<Tblock, bool> filter)
+		{
+			lock (_lock)
+			{
+				return _blocksRepository.Get(filter);
+			}
+		}
+
 		public Tlocation? GetLocation(int geoNameId)
 		{
 			lock (_lock)
 			{
 				return _locationsRepository.GetSingle(geoNameId);
+			}
+		}
+
+		public IEnumerable<Tlocation> GetLocations(Func<Tlocation, bool> filter)
+		{
+			lock (_lock)
+			{
+				return _locationsRepository.Get(filter);
 			}
 		}
 

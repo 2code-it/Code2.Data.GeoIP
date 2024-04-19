@@ -19,6 +19,7 @@ namespace Code2.Data.GeoIP.Internals
 		string PathCombine(params string[] paths);
 		string[] DirectoryGetFiles(string path, string search);
 		void DirectoryCreate(string path);
+		bool DirectoryExists(string path);
 		string FileGetSha256Hex(Stream fileStream);
 		void ZipArchiveExtractEntryTo(string zipFilePath, string fileFilter, string outputDirectory);
 	}

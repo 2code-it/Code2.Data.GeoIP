@@ -12,7 +12,7 @@
 		public string? CsvLocationsFileFilter { get; set; }
 		public int CsvReaderChunkSize { get; set; }
 		public string? CsvReaderErrorLogFile { get; set; }
-		public int CsvUpdateIntervalInDays { get; set; }
+		public bool AutoUpdate { get; set; }
 		public bool AutoLoad { get; set; }
 	}
 }

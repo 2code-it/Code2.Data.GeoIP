@@ -9,6 +9,6 @@
 	"CsvLocationsFileFilter": "Locations-en.csv",
 	"CsvReaderChunkSize": 5000,
 	"CsvReaderErrorLogFile": "./data/csv_error.txt",
-	"CsvUpdateIntervalInDays": 0,
-	"AutoLoad": false
+	"AutoLoad": false,
+	"AutoUpdate": false
 }

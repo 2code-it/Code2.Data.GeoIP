@@ -2,9 +2,6 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
 using System.Collections;
-using System.Collections.Specialized;
-using System.Net.Http.Headers;
-using System.Security.Cryptography;
 using System.Text;
 
 namespace Code2.Data.GeoIP.Tests
@@ -12,11 +9,9 @@ namespace Code2.Data.GeoIP.Tests
 	[TestClass]
 	public class HttpUtilityTests
 	{
-		private HttpRequestMessage _requestMessage = default!;
 		private HttpRequestMessage _defaultRequestMessage = default!;
 		private HttpResponseMessage _responseMessage = default!;
 		private IHttpClient _httpClient = default!;
-		private HttpRequestHeaders _defaultRequestHeaders = default!;
 		private IHttpClientFactory _httpClientFactory = default!;
 		private IFileSystem _fileSystem = default!;
 
@@ -71,7 +66,7 @@ namespace Code2.Data.GeoIP.Tests
 			_fileSystem.FileCreate(Arg.Any<string>()).Returns(msOut);
 			_httpClientFactory.Create().Returns(_httpClient);
 			HttpUtility httpUtility = new HttpUtility(_httpClientFactory, _fileSystem);
-			
+
 			httpUtility.DownloadFileToAsync("http://localhost/", "/path/to/file").Wait();
 
 			byte[] bufferOut = msOut.ToArray();
@@ -125,7 +120,7 @@ namespace Code2.Data.GeoIP.Tests
 			_httpClient.DefaultRequestHeaders.Returns(_defaultRequestMessage.Headers);
 			_httpClientFactory = Substitute.For<IHttpClientFactory>();
 			_fileSystem = Substitute.For<IFileSystem>();
-			
+
 		}
 	}
 }

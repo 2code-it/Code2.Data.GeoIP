@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Code2.Data.GeoIP.Internals
 {
-	internal interface IHttpClient: IDisposable
+	internal interface IHttpClient : IDisposable
 	{
 		System.Net.Http.Headers.HttpRequestHeaders DefaultRequestHeaders { get; }
 		Task<HttpResponseMessage> GetAsync(string url, HttpCompletionOption completionOption);

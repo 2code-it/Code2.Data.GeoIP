@@ -1,5 +1,4 @@
 ﻿using System;
-using System.IO;
 
 namespace Code2.Data.GeoIP.Internals
 {

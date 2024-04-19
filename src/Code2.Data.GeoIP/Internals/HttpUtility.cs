@@ -13,7 +13,7 @@ namespace Code2.Data.GeoIP.Internals
 		{
 			_httpClientFactory = httpClientFactory;
 			_fileSystem = fileSystem;
-			
+
 		}
 
 		private readonly IFileSystem _fileSystem;

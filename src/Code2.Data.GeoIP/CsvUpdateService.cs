@@ -1,10 +1,8 @@
 ﻿using Code2.Data.GeoIP.Internals;
 using System;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Code2.Data.GeoIP
 {
@@ -23,8 +21,8 @@ namespace Code2.Data.GeoIP
 		private readonly ITaskUtility _taskUtility;
 		private CancellationTokenSource? _cts;
 		private const int _msPerHour = 3600000;
-		private static SemaphoreSlim _semaphoreFileUpdate = new SemaphoreSlim(1);
-		
+		private static readonly SemaphoreSlim _semaphoreFileUpdate = new SemaphoreSlim(1);
+
 
 		public event EventHandler? Update;
 		public event EventHandler<UnhandledExceptionEventArgs>? Error;
@@ -102,7 +100,7 @@ namespace Code2.Data.GeoIP
 
 				_fileSystem.FileDelete(zipFilePath);
 			}
-			catch(Exception ex)
+			catch (Exception ex)
 			{
 				OnError(ex);
 			}

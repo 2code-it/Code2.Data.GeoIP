@@ -1,5 +1,4 @@
-﻿using Code2.Data.GeoIP;
-using Code2.Data.GeoIP.Internals;
+﻿using Code2.Data.GeoIP.Internals;
 using Code2.Tools.Csv;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;

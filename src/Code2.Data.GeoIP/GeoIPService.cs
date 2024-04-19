@@ -5,12 +5,11 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace Code2.Data.GeoIP
 {
-	public class GeoIPService<Tblock, Tlocation> : IGeoIPService<Tblock, Tlocation> 
+	public class GeoIPService<Tblock, Tlocation> : IGeoIPService<Tblock, Tlocation>
 		where Tblock : BlockBase, new()
 		where Tlocation : LocationBase, new()
 	{
@@ -40,7 +39,7 @@ namespace Code2.Data.GeoIP
 			_csvReaderFactory = csvReaderFactory;
 
 			_csvUpdateService.Update += async (_, _) => { Update?.Invoke(this, EventArgs.Empty); await LoadAsync(); };
-			_csvUpdateService.Error += (_, e) => { OnError((Exception)e.ExceptionObject);};
+			_csvUpdateService.Error += (_, e) => { OnError((Exception)e.ExceptionObject); };
 
 			Configure(options);
 		}
@@ -122,7 +121,7 @@ namespace Code2.Data.GeoIP
 				ThrowOnInvalidUpdateOption();
 				_csvUpdateService.StartAutomaticUpdating();
 			}
-			if(Options.AutoLoad && !HasData && !_csvUpdateService.IsUpdating)
+			if (Options.AutoLoad && !HasData && !_csvUpdateService.IsUpdating)
 			{
 				Load();
 			}

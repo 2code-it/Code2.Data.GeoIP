@@ -113,7 +113,6 @@ namespace Code2.Data.GeoIP.Tests
 
 		private void ResetDependencies()
 		{
-			_requestMessage = new HttpRequestMessage();
 			_responseMessage = new HttpResponseMessage();
 			_defaultRequestMessage = new HttpRequestMessage();
 			_httpClient = Substitute.For<IHttpClient>();

@@ -5,28 +5,28 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace Code2.Data.GeoIP
 {
-	public class GeoIPService<Tblock, Tlocation> : IGeoIPService<Tblock, Tlocation>, IDisposable
+	public class GeoIPService<Tblock, Tlocation> : IGeoIPService<Tblock, Tlocation>
 		where Tblock : BlockBase, new()
 		where Tlocation : LocationBase, new()
 	{
-		public GeoIPService() : this(null) { }
-		public GeoIPService(GeoIPServiceOptions? options) :
+		public GeoIPService() : this(GetDefaultOptions()) { }
+		public GeoIPService(GeoIPServiceOptions options) :
 			this(options, new InMemoryBlocksRepository<Tblock>(), new InMemoryLocationsRepository<Tlocation>())
 		{ }
-		public GeoIPService(GeoIPServiceOptions? options, IRepository<Tblock, UInt128> blocksRepository, IRepository<Tlocation, int> locationsRepository) :
-			this(options, blocksRepository, locationsRepository, new NetworkUtility(), new FileSystem(), new CsvReaderFactory())
+		public GeoIPService(GeoIPServiceOptions options, IRepository<Tblock, UInt128> blocksRepository, IRepository<Tlocation, int> locationsRepository) :
+			this(options, blocksRepository, locationsRepository, new NetworkUtility(), new CsvUpdateService(), new FileSystem(), new CsvReaderFactory())
 		{ }
 
 		internal GeoIPService(
-			GeoIPServiceOptions? options,
+			GeoIPServiceOptions options,
 			IRepository<Tblock, UInt128> blocksRepository,
 			IRepository<Tlocation, int> locationsRespository,
 			INetworkUtility networkUtility,
+			ICsvUpdateService csvUpdateService,
 			IFileSystem fileSystem,
 			ICsvReaderFactory csvReaderFactory
 		)
@@ -34,22 +34,31 @@ namespace Code2.Data.GeoIP
 			_blocksRepository = blocksRepository;
 			_locationsRepository = locationsRespository;
 			_networkUtility = networkUtility;
+			_csvUpdateService = csvUpdateService;
 			_fileSystem = fileSystem;
 			_csvReaderFactory = csvReaderFactory;
-			if (options is not null) Configure(options);
+
+			_csvUpdateService.Update += async (_, _) => { Update?.Invoke(this, EventArgs.Empty); await LoadAsync(); };
+			_csvUpdateService.Error += (_, e) => { OnError((Exception)e.ExceptionObject); };
+
+			Configure(options);
 		}
+
 
 		private readonly IRepository<Tblock, UInt128> _blocksRepository;
 		private readonly IRepository<Tlocation, int> _locationsRepository;
 		private readonly INetworkUtility _networkUtility;
 		private readonly IFileSystem _fileSystem;
 		private readonly ICsvReaderFactory _csvReaderFactory;
+		private readonly ICsvUpdateService _csvUpdateService;
 		private readonly object _lock = new object();
-		private Timer? _updateTimer;
-		private const int _msPerHour = 3600000;
+
+		public event EventHandler<UnhandledExceptionEventArgs>? Error;
+		public event EventHandler? Update;
 
 		public GeoIPServiceOptions Options { get; private set; } = GetDefaultOptions();
 		public bool HasData => _blocksRepository.HasData;
+		public bool IsUpdating => _csvUpdateService.IsUpdating;
 
 		public Tblock? GetBlock(UInt128 ipNumber)
 		{
@@ -70,96 +79,20 @@ namespace Code2.Data.GeoIP
 			}
 		}
 
-
-		public void Load()
+		public async Task UpdateFilesAsync()
 		{
-			lock (_lock)
-			{
-				var files = GetCsvFilePaths();
-
-				if (files.ipv4block is null && files.ipv6block is null)
-					throw new InvalidOperationException("Csv blocks file not found");
-
-				if (_blocksRepository.HasData) _blocksRepository.RemoveAll();
-				if (_locationsRepository.HasData) _locationsRepository.RemoveAll();
-				if (Options.CsvReaderErrorLogFile is not null)
-				{
-					string logFilePath = _fileSystem.PathGetFullPath(Options.CsvReaderErrorLogFile);
-					if (_fileSystem.FileExists(logFilePath)) _fileSystem.FileDelete(logFilePath);
-				}
-
-				AddCsvFileToRepository(_blocksRepository, files.ipv4block, Options.CsvReaderChunkSize);
-				AddCsvFileToRepository(_blocksRepository, files.ipv6block, Options.CsvReaderChunkSize);
-				AddCsvFileToRepository(_locationsRepository, files.locations, Options.CsvReaderChunkSize);
-			}
-		}
-
-		public void UpdateFiles()
-		{
-			ThrowOnEmptyRequiredOption(Options.MaxmindLicenseKey, nameof(Options.MaxmindLicenseKey));
-			ThrowOnEmptyRequiredOption(Options.MaxmindEdition, nameof(Options.MaxmindEdition));
-			ThrowOnEmptyRequiredOption(Options.CsvDownloadUrl, nameof(Options.CsvDownloadUrl));
-
-			string urlZip = Options.CsvDownloadUrl!.Replace($"$({nameof(Options.MaxmindLicenseKey)})", Options.MaxmindLicenseKey)
-				.Replace($"$({nameof(Options.MaxmindEdition)})", Options.MaxmindEdition);
-
-			string dataDirectory = _fileSystem.PathGetFullPath(Options.CsvDataDirectory!);
-			string downloadFilePath = _fileSystem.PathCombine(dataDirectory, $"{Options.MaxmindEdition}.zip");
-
-			if (_fileSystem.FileExists(downloadFilePath)) _fileSystem.FileDelete(downloadFilePath);
-
-			using Stream stream = _networkUtility.HttpGetStream(urlZip);
-			using Stream fileStream = _fileSystem.FileCreate(downloadFilePath);
-			{
-				stream.CopyTo(fileStream);
-				fileStream.Position = 0;
-
-				if (Options.UseDownloadHashCheck)
-				{
-					string hashRemote = _networkUtility.HttpGetString(urlZip + ".sha256");
-					hashRemote = hashRemote.Split(' ').First().ToUpper();
-					string hashLocal = _fileSystem.FileGetSha256Hex(fileStream);
-					if (hashRemote != hashLocal)
-						throw new InvalidOperationException("File hash mismatch");
-				}
-				fileStream.Close();
-			}
-
-			UpdateFiles(downloadFilePath);
-			_fileSystem.FileDelete(downloadFilePath);
-		}
-
-		public void UpdateFiles(string zipFilePath)
-		{
-			EnsureDataDirectoryExists();
-			string dataDirectory = _fileSystem.PathGetFullPath(Options.CsvDataDirectory!);
-
-			ExtractZipEntryIfExists(zipFilePath, Options.CsvBlocksIPv4FileFilter, dataDirectory);
-			ExtractZipEntryIfExists(zipFilePath, Options.CsvBlocksIPv6FileFilter, dataDirectory);
-			ExtractZipEntryIfExists(zipFilePath, Options.CsvLocationsFileFilter, dataDirectory);
-		}
-
-		public DateTime GetLastFileWriteTime()
-		{
-			var files = GetCsvFilePaths();
-			string[] fileArray = new[] { files.ipv4block, files.ipv6block, files.locations }.Where(x => x is not null).ToArray()!;
-			if (fileArray.Length == 0) return DateTime.MinValue;
-			return fileArray.Select(x => _fileSystem.FileGetLastWriteTime(x!)).Max();
+			ThrowOnInvalidUpdateOption();
+			await _csvUpdateService.UpdateFilesAsync();
 		}
 
 		public async Task LoadAsync()
 			=> await Task.Run(Load);
 
-		public async Task UpdateFilesAsync()
-			=> await Task.Run(UpdateFiles);
-
-		public async Task UpdateFilesAsync(string zipFilePath)
-			=> await Task.Run(() => UpdateFiles(zipFilePath));
-
 		public void Configure(Action<GeoIPServiceOptions> configure)
 		{
-			configure(Options);
-			PostConfigure();
+			GeoIPServiceOptions options = new GeoIPServiceOptions();
+			configure(options);
+			Configure(options);
 		}
 
 		public void Configure(GeoIPServiceOptions options)
@@ -174,63 +107,47 @@ namespace Code2.Data.GeoIP
 			if (options.MaxmindLicenseKey is not null) Options.MaxmindLicenseKey = options.MaxmindLicenseKey;
 			if (options.CsvReaderChunkSize > 0) Options.CsvReaderChunkSize = options.CsvReaderChunkSize;
 			Options.UseDownloadHashCheck = options.UseDownloadHashCheck;
-			Options.CsvUpdateIntervalInDays = options.CsvUpdateIntervalInDays;
+			Options.AutoUpdate = options.AutoUpdate;
 			Options.AutoLoad = options.AutoLoad;
 
-			PostConfigure();
+			_csvUpdateService.UseDownloadHashCheck = Options.UseDownloadHashCheck;
+			_csvUpdateService.CsvFileFilters = new[] { Options.CsvBlocksIPv4FileFilter, Options.CsvBlocksIPv6FileFilter, Options.CsvLocationsFileFilter }.Where(x => x != null).ToArray()!;
+			_csvUpdateService.CsvDataDirectory = Options.CsvDataDirectory!;
+			_csvUpdateService.CsvDownloadUrl = Options.CsvDownloadUrl!;
+			_csvUpdateService.MaxmindEdition = Options.MaxmindEdition!;
+			_csvUpdateService.MaxmindLicenseKey = Options.MaxmindLicenseKey!;
+			if (Options.AutoUpdate)
+			{
+				ThrowOnInvalidUpdateOption();
+				_csvUpdateService.StartAutomaticUpdating();
+			}
+			if (Options.AutoLoad && !HasData && !_csvUpdateService.IsUpdating)
+			{
+				Load();
+			}
 		}
 
-		private void PostConfigure()
-		{
-			if (Options.CsvUpdateIntervalInDays > 0)
-			{
-				StartUpdateTimer();
-			}
-			else
-			{
-				StopUpdateTimer();
-			}
-
-			if (Options.AutoLoad) AutoLoad();
-		}
-
-		private void StartUpdateTimer()
+		private void Load()
 		{
 			lock (_lock)
 			{
-				if (_updateTimer is not null) return;
-				_updateTimer = new Timer(new TimerCallback(OnUpdateTimerTick), null, _msPerHour, _msPerHour);
+				var files = GetCsvFilePaths();
+
+				if (files.ipv4block is null && files.ipv6block is null)
+					OnError("Csv blocks file not found");
+
+				if (_blocksRepository.HasData) _blocksRepository.RemoveAll();
+				if (_locationsRepository.HasData) _locationsRepository.RemoveAll();
+				if (Options.CsvReaderErrorLogFile is not null)
+				{
+					string logFilePath = _fileSystem.PathGetFullPath(Options.CsvReaderErrorLogFile);
+					if (_fileSystem.FileExists(logFilePath)) _fileSystem.FileDelete(logFilePath);
+				}
+
+				AddCsvFileToRepository(_blocksRepository, files.ipv4block, Options.CsvReaderChunkSize);
+				AddCsvFileToRepository(_blocksRepository, files.ipv6block, Options.CsvReaderChunkSize);
+				AddCsvFileToRepository(_locationsRepository, files.locations, Options.CsvReaderChunkSize);
 			}
-		}
-
-		private void StopUpdateTimer()
-		{
-			lock (_lock)
-			{
-				if (_updateTimer is null) return;
-				_updateTimer.Dispose();
-				_updateTimer = null;
-			}
-		}
-
-		private async void OnUpdateTimerTick(object? state)
-		{
-			if (!ShouldUpdate()) return;
-			await UpdateFilesAsync();
-			await LoadAsync();
-		}
-
-		private async void AutoLoad()
-		{
-			if (HasData) return;
-			if (ShouldUpdate()) await UpdateFilesAsync();
-			await LoadAsync();
-		}
-
-		private bool ShouldUpdate()
-		{
-			if (Options.CsvUpdateIntervalInDays == 0) return false;
-			return GetLastFileWriteTime().AddDays(Options.CsvUpdateIntervalInDays) < DateTime.Now;
 		}
 
 		private void EnsureDataDirectoryExists()
@@ -250,16 +167,21 @@ namespace Code2.Data.GeoIP
 			return (ipv4BlocksFilePath, ipv6BlocksFilePath, locationsFilePath);
 		}
 
-		private void ExtractZipEntryIfExists(string zipFilePath, string? nameFilter, string destinationDirectory)
+		private void ThrowOnInvalidUpdateOption()
 		{
-			if (string.IsNullOrEmpty(nameFilter)) return;
-			_fileSystem.ZipArchiveExtractEntryTo(zipFilePath, nameFilter, destinationDirectory);
+			ThrowOnEmptyRequiredOption(Options.MaxmindLicenseKey, nameof(Options.MaxmindLicenseKey));
+			ThrowOnEmptyRequiredOption(Options.MaxmindEdition, nameof(Options.MaxmindEdition));
+			ThrowOnEmptyRequiredOption(Options.CsvDownloadUrl, nameof(Options.CsvDownloadUrl));
+			if (string.IsNullOrEmpty(Options.CsvBlocksIPv4FileFilter) && string.IsNullOrEmpty(Options.CsvBlocksIPv6FileFilter) && string.IsNullOrEmpty(Options.CsvLocationsFileFilter))
+			{
+				OnError("Updating requires atleast one file filter");
+			}
 		}
 
 		private void ThrowOnEmptyRequiredOption(string? optionValue, string optionName)
 		{
 			if (!string.IsNullOrEmpty(optionValue)) return;
-			throw new InvalidOperationException($"Required option not set {optionName}");
+			OnError($"Required option not set {optionName}");
 		}
 
 		private void UpdateSubnet(IEnumerable<ISubnet> items)
@@ -302,15 +224,19 @@ namespace Code2.Data.GeoIP
 			}
 		}
 
+		private void OnError(string message)
+			=> OnError(new InvalidOperationException(message));
+
+		private void OnError(Exception exception)
+		{
+			if (Error is null) throw exception;
+			Error.Invoke(this, new UnhandledExceptionEventArgs(exception, false));
+		}
+
 		private static GeoIPServiceOptions GetDefaultOptions()
 		{
 			using Stream stream = typeof(GeoIPServiceOptions).Assembly.GetManifestResourceStream(typeof(GeoIPServiceOptions), $"{nameof(GeoIPServiceOptions)}.json")!;
 			return JsonSerializer.Deserialize<GeoIPServiceOptions>(stream)!;
-		}
-
-		public void Dispose()
-		{
-			StopUpdateTimer();
 		}
 	}
 }

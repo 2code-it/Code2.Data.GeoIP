@@ -1,7 +1,7 @@
 ﻿using Code2.Data.GeoIP.Internals;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Code2.Data.GeoIPTests
+namespace Code2.Data.GeoIP.Tests
 {
 	[TestClass]
 	public class NetworkUtilityTests

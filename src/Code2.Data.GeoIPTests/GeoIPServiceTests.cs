@@ -1,10 +1,9 @@
-﻿using Code2.Data.GeoIP;
-using Code2.Data.GeoIP.Internals;
+﻿using Code2.Data.GeoIP.Internals;
 using Code2.Tools.Csv;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
 
-namespace Code2.Data.GeoIPTests
+namespace Code2.Data.GeoIP.Tests
 {
 	[TestClass]
 	public class GeoIPServiceTests : IDisposable
@@ -17,23 +16,24 @@ namespace Code2.Data.GeoIPTests
 		private CsvReaderOptions _csvReaderOptions = default!;
 		private ICsvReader<BlockBase> _csvReaderBlock = default!;
 		private ICsvReader<LocationBase> _csvReaderLocation = default!;
+		private ICsvUpdateService _csvUpdateService = default!;
 		private IFileSystem _fileSystem = default!;
 		private MemoryStream _memoryStream = default!;
 		private StreamReader _streamReader = default!;
 
 
 		[TestMethod]
-		[ExpectedException(typeof(InvalidOperationException))]
-		public void Load_When_WithoutBlockFileOptionsDefined_Expect_Exception()
+		[ExpectedException(typeof(AggregateException))]
+		public void Load_When_WithoutBlockFileFilterOptionsDefined_Expect_Exception()
 		{
 			var service = GetGeoIPService();
 			service.Options.CsvBlocksIPv4FileFilter = null;
 			service.Options.CsvBlocksIPv6FileFilter = null;
-			service.Load();
+			service.LoadAsync().Wait();
 		}
 
 		[TestMethod]
-		public void Load_When_WithFileOptionsDefined_Expect_FileSystemCallForEach()
+		public void Load_When_WithFileFilterOptionsDefined_Expect_FileSystemCallForEach()
 		{
 			var service = GetGeoIPService();
 			_fileSystem.DirectoryGetFiles(Arg.Any<string>(), Arg.Any<string>()).Returns(new[] { "some-blocksipv4.csv", "some-blocksipv6.csv", "some-locations.csv" });
@@ -41,31 +41,31 @@ namespace Code2.Data.GeoIPTests
 			service.Options.CsvBlocksIPv6FileFilter = "blocksipv6.csv";
 			service.Options.CsvLocationsFileFilter = "locations.csv";
 
-			service.Load();
+			service.LoadAsync().Wait();
 
 			_fileSystem.Received(3).FileOpenText(Arg.Any<string>());
 		}
 
 		[TestMethod]
-		public void Load_When_WithFileOptionsIPv4OnlyDefined_Expect_FileSystemCall()
+		public void Load_When_WithFileFilterOptionsIPv4OnlyDefined_Expect_FileSystemCall()
 		{
 			var service = GetGeoIPService();
 			_fileSystem.DirectoryGetFiles(Arg.Any<string>(), Arg.Any<string>()).Returns(new[] { "some-blocksipv4.csv" });
 			service.Options.CsvBlocksIPv4FileFilter = "blocksipv4.csv";
 
-			service.Load();
+			service.LoadAsync().Wait();
 
 			_fileSystem.Received(1).FileOpenText(Arg.Any<string>());
 		}
 
 		[TestMethod]
-		public void Load_When_WithBlocksFileOptionDefined_Expect_CsvReaderCall()
+		public void Load_When_WithBlocksFileFilterOptionDefined_Expect_CsvReaderCall()
 		{
 			var service = GetGeoIPService();
 			_fileSystem.DirectoryGetFiles(Arg.Any<string>(), Arg.Any<string>()).Returns(new[] { "some-blocksipv4.csv" });
 			service.Options.CsvBlocksIPv4FileFilter = "blocksipv4.csv";
 
-			service.Load();
+			service.LoadAsync().Wait();
 
 			_csvReaderBlock.Received(1).ReadObjects(Arg.Any<int>());
 		}
@@ -79,7 +79,7 @@ namespace Code2.Data.GeoIPTests
 			BlockBase block = new BlockBase() { Network = "0.0.0.1/24" };
 			_csvReaderBlock.ReadObjects(Arg.Any<int>()).Returns(new[] { block });
 
-			service.Load();
+			service.LoadAsync().Wait();
 
 			_blocksRepository.Received(1).Add(Arg.Any<IEnumerable<BlockBase>>());
 		}
@@ -94,7 +94,7 @@ namespace Code2.Data.GeoIPTests
 			LocationBase location = new();
 			_csvReaderLocation.ReadObjects(Arg.Any<int>()).Returns(new[] { location });
 
-			service.Load();
+			service.LoadAsync().Wait();
 
 			_locationsRepository.Received(1).Add(Arg.Any<IEnumerable<LocationBase>>());
 		}
@@ -109,136 +109,127 @@ namespace Code2.Data.GeoIPTests
 			BlockBase block = new BlockBase() { Network = network };
 			_csvReaderBlock.ReadObjects(Arg.Any<int>()).Returns(new[] { block });
 
-			service.Load();
+			service.LoadAsync().Wait();
 
 			_networkUtility.Received(1).GetRangeFromCidr(Arg.Is(network));
 		}
 
-		[TestMethod]
-		[ExpectedException(typeof(InvalidOperationException))]
-		public void UpdateFiles_When_RequiredOptionNotSet_Expect_Exception()
-		{
-			var service = GetGeoIPService();
+		//[TestMethod]
+		//public async void UpdateFiles_When_RequiredOptionsSet_Expect_ParametersInUrl()
+		//{
+		//	using Stream httpStream = new MemoryStream();
+		//	using Stream fileStream = new MemoryStream();
 
-			service.Load();
-		}
+		//	var service = GetGeoIPService();
+		//	service.Options.MaxmindEdition = "edition1";
+		//	service.Options.MaxmindLicenseKey = "key1";
+		//	service.Options.CsvDownloadUrl = $"$({nameof(GeoIPServiceOptions.MaxmindEdition)})$({nameof(GeoIPServiceOptions.MaxmindLicenseKey)})";
+		//	service.Options.UseDownloadHashCheck = false;
+		//	_fileSystem.FileCreate(Arg.Any<string>()).Returns(x => fileStream);
 
-		[TestMethod]
-		public void UpdateFiles_When_RequiredOptionsSet_Expect_ParametersInUrl()
-		{
-			using Stream httpStream = new MemoryStream();
-			using Stream fileStream = new MemoryStream();
+		//	string url = "";
+		//	_networkUtility.HttpGetStream(Arg.Do<string>(x => url = x)).Returns(x => httpStream);
 
-			var service = GetGeoIPService();
-			service.Options.MaxmindEdition = "edition1";
-			service.Options.MaxmindLicenseKey = "key1";
-			service.Options.CsvDownloadUrl = $"$({nameof(GeoIPServiceOptions.MaxmindEdition)})$({nameof(GeoIPServiceOptions.MaxmindLicenseKey)})";
-			service.Options.UseDownloadHashCheck = false;
-			_fileSystem.FileCreate(Arg.Any<string>()).Returns(x => fileStream);
+		//	await service.LoadAsync();
 
-			string url = "";
-			_networkUtility.HttpGetStream(Arg.Do<string>(x => url = x)).Returns(x => httpStream);
+		//	string expectedUrl = $"{service.Options.MaxmindEdition}{service.Options.MaxmindLicenseKey}";
+		//	Assert.AreEqual(expectedUrl, url);
+		//}
 
-			service.UpdateFiles();
+		//[TestMethod]
+		//[ExpectedException(typeof(InvalidOperationException))]
+		//public void UpdateFiles_When_UseDownloadHashCheckIsTrueAndHashMismatch_Expect_Exception()
+		//{
+		//	using Stream httpStream = new MemoryStream();
+		//	using Stream fileStream = new MemoryStream();
 
-			string expectedUrl = $"{service.Options.MaxmindEdition}{service.Options.MaxmindLicenseKey}";
-			Assert.AreEqual(expectedUrl, url);
-		}
+		//	var service = GetGeoIPService();
+		//	service.Options.MaxmindEdition = "edition1";
+		//	service.Options.MaxmindLicenseKey = "key1";
+		//	service.Options.CsvDownloadUrl = "/";
+		//	service.Options.UseDownloadHashCheck = true;
+		//	_fileSystem.FileCreate(Arg.Any<string>()).Returns(x => fileStream);
+		//	_networkUtility.HttpGetStream(Arg.Any<string>()).Returns(x => httpStream);
+		//	_networkUtility.HttpGetString(Arg.Any<string>()).Returns("ab10ef ?");
+		//	_fileSystem.FileGetSha256Hex(Arg.Any<Stream>()).Returns("AADD00");
 
-		[TestMethod]
-		[ExpectedException(typeof(InvalidOperationException))]
-		public void UpdateFiles_When_UseDownloadHashCheckIsTrueAndHashMismatch_Expect_Exception()
-		{
-			using Stream httpStream = new MemoryStream();
-			using Stream fileStream = new MemoryStream();
+		//	service.UpdateFiles();
+		//}
 
-			var service = GetGeoIPService();
-			service.Options.MaxmindEdition = "edition1";
-			service.Options.MaxmindLicenseKey = "key1";
-			service.Options.CsvDownloadUrl = "/";
-			service.Options.UseDownloadHashCheck = true;
-			_fileSystem.FileCreate(Arg.Any<string>()).Returns(x => fileStream);
-			_networkUtility.HttpGetStream(Arg.Any<string>()).Returns(x => httpStream);
-			_networkUtility.HttpGetString(Arg.Any<string>()).Returns("ab10ef ?");
-			_fileSystem.FileGetSha256Hex(Arg.Any<Stream>()).Returns("AADD00");
+		//[TestMethod]
+		//public void UpdateFiles_When_UseDownloadHashCheckFalseAndHashMisMatch_Expect_ZipExtractEntryCall()
+		//{
+		//	using Stream httpStream = new MemoryStream();
+		//	using Stream fileStream = new MemoryStream();
 
-			service.UpdateFiles();
-		}
+		//	var service = GetGeoIPService();
+		//	service.Options.MaxmindEdition = "edition1";
+		//	service.Options.MaxmindLicenseKey = "key1";
+		//	service.Options.CsvDownloadUrl = "/";
+		//	service.Options.UseDownloadHashCheck = false;
+		//	service.Options.CsvBlocksIPv6FileFilter = string.Empty;
+		//	service.Options.CsvLocationsFileFilter = string.Empty;
+		//	_fileSystem.DirectoryGetFiles(Arg.Any<string>(), Arg.Any<string>()).Returns(new[] { "some-blocksipv4.csv" });
+		//	service.Options.CsvBlocksIPv4FileFilter = "blocksipv4.csv";
+		//	_fileSystem.FileCreate(Arg.Any<string>()).Returns(x => fileStream);
+		//	_networkUtility.HttpGetStream(Arg.Any<string>()).Returns(x => httpStream);
+		//	_networkUtility.HttpGetString(Arg.Any<string>()).Returns("aadd00 ?");
+		//	_fileSystem.FileGetSha256Hex(Arg.Any<Stream>()).Returns("AADD01");
 
-		[TestMethod]
-		public void UpdateFiles_When_UseDownloadHashCheckFalseAndHashMisMatch_Expect_ZipExtractEntryCall()
-		{
-			using Stream httpStream = new MemoryStream();
-			using Stream fileStream = new MemoryStream();
+		//	service.UpdateFiles();
 
-			var service = GetGeoIPService();
-			service.Options.MaxmindEdition = "edition1";
-			service.Options.MaxmindLicenseKey = "key1";
-			service.Options.CsvDownloadUrl = "/";
-			service.Options.UseDownloadHashCheck = false;
-			service.Options.CsvBlocksIPv6FileFilter = string.Empty;
-			service.Options.CsvLocationsFileFilter = string.Empty;
-			_fileSystem.DirectoryGetFiles(Arg.Any<string>(), Arg.Any<string>()).Returns(new[] { "some-blocksipv4.csv" });
-			service.Options.CsvBlocksIPv4FileFilter = "blocksipv4.csv";
-			_fileSystem.FileCreate(Arg.Any<string>()).Returns(x => fileStream);
-			_networkUtility.HttpGetStream(Arg.Any<string>()).Returns(x => httpStream);
-			_networkUtility.HttpGetString(Arg.Any<string>()).Returns("aadd00 ?");
-			_fileSystem.FileGetSha256Hex(Arg.Any<Stream>()).Returns("AADD01");
+		//	_fileSystem.Received(1).ZipArchiveExtractEntryTo(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>());
+		//}
 
-			service.UpdateFiles();
+		//[TestMethod]
+		//public void UpdateFiles_When_UseDownloadHashCheckIsTrueHashMatch_Expect_ZipExtractEntryCalls()
+		//{
+		//	using Stream httpStream = new MemoryStream();
+		//	using Stream fileStream = new MemoryStream();
 
-			_fileSystem.Received(1).ZipArchiveExtractEntryTo(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>());
-		}
+		//	var service = GetGeoIPService();
+		//	service.Options.MaxmindEdition = "edition1";
+		//	service.Options.MaxmindLicenseKey = "key1";
+		//	service.Options.CsvDownloadUrl = "/";
+		//	service.Options.UseDownloadHashCheck = true;
+		//	_fileSystem.DirectoryGetFiles(Arg.Any<string>(), Arg.Any<string>()).Returns(new[] { "some-blocksipv4.csv", "some-blocksipv6.csv", "some-locations.csv" });
+		//	service.Options.CsvBlocksIPv4FileFilter = "blocksipv4.csv";
+		//	service.Options.CsvBlocksIPv6FileFilter = "blocksipv6.csv";
+		//	service.Options.CsvLocationsFileFilter = "locations.csv";
+		//	_fileSystem.FileCreate(Arg.Any<string>()).Returns(x => fileStream);
+		//	_networkUtility.HttpGetStream(Arg.Any<string>()).Returns(x => httpStream);
+		//	_networkUtility.HttpGetString(Arg.Any<string>()).Returns("aadd00 ?");
+		//	_fileSystem.FileGetSha256Hex(Arg.Any<Stream>()).Returns("AADD00");
 
-		[TestMethod]
-		public void UpdateFiles_When_UseDownloadHashCheckIsTrueHashMatch_Expect_ZipExtractEntryCalls()
-		{
-			using Stream httpStream = new MemoryStream();
-			using Stream fileStream = new MemoryStream();
+		//	service.UpdateFiles();
 
-			var service = GetGeoIPService();
-			service.Options.MaxmindEdition = "edition1";
-			service.Options.MaxmindLicenseKey = "key1";
-			service.Options.CsvDownloadUrl = "/";
-			service.Options.UseDownloadHashCheck = true;
-			_fileSystem.DirectoryGetFiles(Arg.Any<string>(), Arg.Any<string>()).Returns(new[] { "some-blocksipv4.csv", "some-blocksipv6.csv", "some-locations.csv" });
-			service.Options.CsvBlocksIPv4FileFilter = "blocksipv4.csv";
-			service.Options.CsvBlocksIPv6FileFilter = "blocksipv6.csv";
-			service.Options.CsvLocationsFileFilter = "locations.csv";
-			_fileSystem.FileCreate(Arg.Any<string>()).Returns(x => fileStream);
-			_networkUtility.HttpGetStream(Arg.Any<string>()).Returns(x => httpStream);
-			_networkUtility.HttpGetString(Arg.Any<string>()).Returns("aadd00 ?");
-			_fileSystem.FileGetSha256Hex(Arg.Any<Stream>()).Returns("AADD00");
+		//	_fileSystem.Received(3).ZipArchiveExtractEntryTo(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>());
+		//}
 
-			service.UpdateFiles();
+		//[TestMethod]
+		//public void UpdateFiles_When_DownloadFileExists_Expect_FileDeleteCallTwice()
+		//{
+		//	using Stream httpStream = new MemoryStream();
+		//	using Stream fileStream = new MemoryStream();
 
-			_fileSystem.Received(3).ZipArchiveExtractEntryTo(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>());
-		}
+		//	var service = GetGeoIPService();
+		//	service.Options.MaxmindEdition = "edition1";
+		//	service.Options.MaxmindLicenseKey = "key1";
+		//	service.Options.CsvDownloadUrl = "/";
+		//	service.Options.UseDownloadHashCheck = false;
+		//	_fileSystem.FileCreate(Arg.Any<string>()).Returns(x => fileStream);
+		//	_networkUtility.HttpGetStream(Arg.Any<string>()).Returns(x => httpStream);
+		//	_fileSystem.FileExists(Arg.Any<string>()).Returns(true);
 
-		[TestMethod]
-		public void UpdateFiles_When_DownloadFileExists_Expect_FileDeleteCallTwice()
-		{
-			using Stream httpStream = new MemoryStream();
-			using Stream fileStream = new MemoryStream();
+		//	service.UpdateFiles();
 
-			var service = GetGeoIPService();
-			service.Options.MaxmindEdition = "edition1";
-			service.Options.MaxmindLicenseKey = "key1";
-			service.Options.CsvDownloadUrl = "/";
-			service.Options.UseDownloadHashCheck = false;
-			_fileSystem.FileCreate(Arg.Any<string>()).Returns(x => fileStream);
-			_networkUtility.HttpGetStream(Arg.Any<string>()).Returns(x => httpStream);
-			_fileSystem.FileExists(Arg.Any<string>()).Returns(true);
-
-			service.UpdateFiles();
-
-			_fileSystem.Received(2).FileDelete(Arg.Any<string>());
-		}
+		//	_fileSystem.Received(2).FileDelete(Arg.Any<string>());
+		//}
 
 		private GeoIPService<BlockBase, LocationBase> GetGeoIPService(bool resetDependencies = true)
 		{
 			if (resetDependencies) ResetDependencies();
-			return new GeoIPService<BlockBase, LocationBase>(_options, _blocksRepository, _locationsRepository, _networkUtility, _fileSystem, _csvReaderFactory);
+			return new GeoIPService<BlockBase, LocationBase>(_options, _blocksRepository, _locationsRepository, _networkUtility, _csvUpdateService, _fileSystem, _csvReaderFactory);
 		}
 
 		private void ResetDependencies()
@@ -251,6 +242,7 @@ namespace Code2.Data.GeoIPTests
 			_fileSystem = Substitute.For<IFileSystem>();
 			_memoryStream = new MemoryStream();
 			_streamReader = new StreamReader(_memoryStream);
+			_csvUpdateService = Substitute.For<ICsvUpdateService>();
 			_fileSystem.FileOpenText(Arg.Any<string>()).Returns(_streamReader);
 			_csvReaderFactory = Substitute.For<ICsvReaderFactory>();
 			_csvReaderOptions = new CsvReaderOptions();

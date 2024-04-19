@@ -48,6 +48,9 @@ namespace Code2.Data.GeoIP.Internals
 		public void DirectoryCreate(string path)
 			=> Directory.CreateDirectory(path);
 
+		public bool DirectoryExists(string path)
+			=> Directory.Exists(path);
+
 		public string FileGetSha256Hex(Stream fileStream)
 		{
 			byte[] hashBytes = SHA256.HashData(fileStream);

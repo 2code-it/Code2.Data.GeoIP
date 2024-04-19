@@ -1,24 +1,10 @@
 ﻿using System;
-using System.IO;
 using System.Net;
-using System.Net.Http;
 
 namespace Code2.Data.GeoIP.Internals
 {
 	internal class NetworkUtility : INetworkUtility
 	{
-		public string HttpGetString(string url)
-		{
-			using HttpClient client = new HttpClient();
-			return client.GetStringAsync(url).Result;
-		}
-
-		public Stream HttpGetStream(string url)
-		{
-			using HttpClient client = new HttpClient();
-			return client.GetStreamAsync(url).Result;
-		}
-
 		public (UInt128 begin, UInt128 end) GetRangeFromCidr(string? cidr)
 		{
 			if (string.IsNullOrEmpty(cidr)) { return (0, 0); }

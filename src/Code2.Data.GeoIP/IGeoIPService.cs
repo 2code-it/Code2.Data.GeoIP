@@ -7,21 +7,19 @@ namespace Code2.Data.GeoIP
 		where Tblock : BlockBase, new()
 		where Tlocation : LocationBase, new()
 	{
-		GeoIPServiceOptions Options { get; }
 		bool HasData { get; }
+		bool IsUpdating { get; }
+		GeoIPServiceOptions Options { get; }
 
-		Tblock? GetBlock(UInt128 ipNumber);
-		Tblock? GetBlock(string ipAddress);
-		Tlocation? GetLocation(int geoNameId);
-		void Load();
-		void UpdateFiles();
-		void UpdateFiles(string zipFilePath);
-		DateTime GetLastFileWriteTime();
-		Task LoadAsync();
-		Task UpdateFilesAsync();
-		Task UpdateFilesAsync(string zipFilePath);
+		event EventHandler<UnhandledExceptionEventArgs>? Error;
+		event EventHandler? Update;
 
 		void Configure(Action<GeoIPServiceOptions> configure);
 		void Configure(GeoIPServiceOptions options);
+		Tblock? GetBlock(string ipAddress);
+		Tblock? GetBlock(UInt128 ipNumber);
+		Tlocation? GetLocation(int geoNameId);
+		Task LoadAsync();
+		Task UpdateFilesAsync();
 	}
 }

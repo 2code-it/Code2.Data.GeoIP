@@ -5,15 +5,15 @@ The csv files can be downloaded after registering at https://www.maxmind.com/.
 ## options
 - MaxmindLicenceKey, can be obtained after registering a free maxmind account, default: ""
 - MaxmindEdition, edition specifier GeoLite2-Country-CSV, GeoLite2-City-CSV, ..etc, default: "GeoLite2-City-CSV"
-- CsvDownloadUrl, csv download url template with placeholders for \$(MaxmindEdition) and \$(MaxmindLicenceKey), default: <maxmind-csv-download-url>
+- CsvDownloadUrl, csv download url template with placeholders for \$(MaxmindEdition) and \$(MaxmindLicenceKey), default: maxmind-template
 - CsvDataDirectory, directory to store the csv files, default: "./data"
 - CsvBlocksIPv4FileFilter, csv ipv4 blocks *file filter, default: "Blocks-IPv4.csv"
 - CsvBlocksIPv6FileFilter, csv ipv6 blocks *file filter, default: "Blocks-IPv6.csv"
 - CsvLocationsFileFilter, csv locations *file filter, default: "Locations-en.csv"
 - CsvReaderChunkSize, amount of lines to read and process, default=5000
 - CsvReaderErrorLogFile, log file for csv read errors, default: "./data/csv_error.txt"
-- CsvUpdateIntervalInDays, automatic update interval in days related to file age, default: 10
 - AutoLoad, loads the files upon initialization when HasData=false, default: false
+- AutoUpdate, keep the csv files updated, default: false
 
 *file filter is used search for a specific file and can be set to null to prevent the file from loading
 
@@ -32,7 +32,7 @@ geoIPService.Options.MaxmindLicenseKey = "<maxmind_licence_key>";
 
 if((DateTime.Now - geoIPService.GetLastFileWriteTime()).TotalDays > 10)
 {
-	geoIPService.UpdateFiles();
+	await geoIPService.UpdateFilesAsync();
 }
 geoIPService.Load();
 

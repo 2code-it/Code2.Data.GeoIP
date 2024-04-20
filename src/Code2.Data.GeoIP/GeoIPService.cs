@@ -131,7 +131,7 @@ namespace Code2.Data.GeoIP
 			Configure(options);
 		}
 
-		public void Configure(GeoIPServiceOptions options)
+		public async void Configure(GeoIPServiceOptions options)
 		{
 			if (options.CsvBlocksIPv4FileFilter is not null) Options.CsvBlocksIPv4FileFilter = options.CsvBlocksIPv4FileFilter;
 			if (options.CsvBlocksIPv6FileFilter is not null) Options.CsvBlocksIPv6FileFilter = options.CsvBlocksIPv6FileFilter;
@@ -152,16 +152,16 @@ namespace Code2.Data.GeoIP
 			_csvUpdateService.CsvDownloadUrl = Options.CsvDownloadUrl!;
 			_csvUpdateService.MaxmindEdition = Options.MaxmindEdition!;
 			_csvUpdateService.MaxmindLicenseKey = Options.MaxmindLicenseKey!;
+
+			if (Options.AutoLoad && !HasData && _csvUpdateService.GetFileLastWriteTime() != DateTime.MinValue)
+			{
+				await LoadAsync();
+			}
+
 			if (Options.AutoUpdate)
 			{
 				ThrowOnInvalidUpdateOption();
 				_csvUpdateService.StartAutomaticUpdating();
-			}
-			if (Options.AutoLoad)
-			{
-				if (HasData) return;
-				if (Options.AutoUpdate && (_csvUpdateService.IsUpdating || _csvUpdateService.GetFileLastWriteTime() == DateTime.MinValue)) return;
-				Load();
 			}
 		}
 

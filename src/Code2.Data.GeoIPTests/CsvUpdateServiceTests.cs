@@ -11,7 +11,6 @@ namespace Code2.Data.GeoIP.Tests
 		private IFileSystem _fileSystem = default!;
 		private IHttpUtility _httpUtility = default!;
 		private ITaskUtility _taskUtility = default!;
-		private const int _msPerHour = 3600000;
 
 		[TestMethod]
 		public void UpdateFilesAsync_When_FileUpdate_Expect_CorrectIsUpdatingValue()
@@ -45,7 +44,7 @@ namespace Code2.Data.GeoIP.Tests
 			_fileSystem.DirectoryGetFiles(Arg.Any<string>(), Arg.Any<string>()).Returns(new[] { "blockipv4.csv" });
 			_fileSystem.FileGetLastWriteTime(Arg.Any<string>()).Returns(lastModifiedLocal);
 			_httpUtility.GetLastModifiedHeaderAsync(Arg.Any<string>()).Returns(lastModifiedRemote);
-			_taskUtility.Delay(Arg.Any<TimeSpan>(), Arg.Any<CancellationToken>()).Returns(x => Task.Delay(10));
+			_taskUtility.Delay(Arg.Any<TimeSpan>(), Arg.Any<CancellationToken>()).Returns(x => Task.Delay(100, (CancellationToken)x[1]).ContinueWith(x=> Task.CompletedTask));
 			CsvUpdateService csvUpdateService = new CsvUpdateService(_fileSystem, _httpUtility, _taskUtility);
 			csvUpdateService.CsvFileFilters = new[] { "blockipv4" };
 

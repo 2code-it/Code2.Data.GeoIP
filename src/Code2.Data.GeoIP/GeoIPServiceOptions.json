@@ -7,6 +7,7 @@
 	"CsvBlocksIPv4FileFilter": "Blocks-IPv4.csv",
 	"CsvBlocksIPv6FileFilter": "Blocks-IPv6.csv",
 	"CsvLocationsFileFilter": "Locations-en.csv",
+	"CsvIspFileFilter": "ISP.csv",
 	"CsvReaderChunkSize": 5000,
 	"CsvReaderErrorLogFile": "./data/csv_error.txt",
 	"AutoLoad": false,

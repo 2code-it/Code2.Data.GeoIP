@@ -25,21 +25,6 @@ namespace Code2.Data.GeoIP
 			_items.Add(items.ToArray());
 		}
 
-		public void AddSingle(T item)
-		{
-			throw new NotImplementedException();
-		}
-
-		public void Remove(IEnumerable<UInt128> ids)
-		{
-			throw new NotImplementedException();
-		}
-
-		public void RemoveSingle(UInt128 id)
-		{
-			throw new NotImplementedException();
-		}
-
 		public void RemoveAll()
 		{
 			_items.Clear();

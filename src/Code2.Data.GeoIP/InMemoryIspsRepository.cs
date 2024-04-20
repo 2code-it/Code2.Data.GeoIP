@@ -4,8 +4,8 @@ using System.Linq;
 
 namespace Code2.Data.GeoIP
 {
-	public class InMemoryLocationsRepository<T> : IRepository<T, int>
-		where T : LocationBase
+	public class InMemoryIspsRepository<T> : IRepository<T, int>
+		where T : IspBase
 	{
 		private readonly List<T> _items = new List<T>();
 
@@ -15,7 +15,7 @@ namespace Code2.Data.GeoIP
 			=> filter is null ? _items : _items.Where(filter);
 
 		public T? GetSingle(int id)
-			=> _items.FirstOrDefault(x => x.GeoNameId == id);
+			=> _items.FirstOrDefault(x => x.IspId == id);
 
 		public void Add(IEnumerable<T> items)
 			=> _items.AddRange(items);

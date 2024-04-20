@@ -9,22 +9,24 @@ using System.Threading.Tasks;
 
 namespace Code2.Data.GeoIP
 {
-	public class GeoIPService<Tblock, Tlocation> : IGeoIPService<Tblock, Tlocation>
+	public class GeoIPService<Tblock, Tlocation, Tisp> : IGeoIPService<Tblock, Tlocation, Tisp>
 		where Tblock : BlockBase, new()
 		where Tlocation : LocationBase, new()
+		where Tisp : IspBase, new()
 	{
 		public GeoIPService() : this(GetDefaultOptions()) { }
 		public GeoIPService(GeoIPServiceOptions options) :
-			this(options, new InMemoryBlocksRepository<Tblock>(), new InMemoryLocationsRepository<Tlocation>())
+			this(options, new InMemoryBlocksRepository<Tblock>(), new InMemoryLocationsRepository<Tlocation>(), new InMemoryIspsRepository<Tisp>())
 		{ }
-		public GeoIPService(GeoIPServiceOptions options, IRepository<Tblock, UInt128> blocksRepository, IRepository<Tlocation, int> locationsRepository) :
-			this(options, blocksRepository, locationsRepository, new NetworkUtility(), new CsvUpdateService(), new FileSystem(), new CsvReaderFactory())
+		public GeoIPService(GeoIPServiceOptions options, IRepository<Tblock, UInt128> blocksRepository, IRepository<Tlocation, int> locationsRepository, IRepository<Tisp, int> ispsRepository) :
+			this(options, blocksRepository, locationsRepository, ispsRepository, new NetworkUtility(), new CsvUpdateService(), new FileSystem(), new CsvReaderFactory())
 		{ }
 
 		internal GeoIPService(
 			GeoIPServiceOptions options,
 			IRepository<Tblock, UInt128> blocksRepository,
 			IRepository<Tlocation, int> locationsRespository,
+			IRepository<Tisp, int> ispsRepository,
 			INetworkUtility networkUtility,
 			ICsvUpdateService csvUpdateService,
 			IFileSystem fileSystem,
@@ -33,6 +35,7 @@ namespace Code2.Data.GeoIP
 		{
 			_blocksRepository = blocksRepository;
 			_locationsRepository = locationsRespository;
+			_ispsRepository = ispsRepository;
 			_networkUtility = networkUtility;
 			_csvUpdateService = csvUpdateService;
 			_fileSystem = fileSystem;
@@ -47,6 +50,7 @@ namespace Code2.Data.GeoIP
 
 		private readonly IRepository<Tblock, UInt128> _blocksRepository;
 		private readonly IRepository<Tlocation, int> _locationsRepository;
+		private readonly IRepository<Tisp, int> _ispsRepository;
 		private readonly INetworkUtility _networkUtility;
 		private readonly IFileSystem _fileSystem;
 		private readonly ICsvReaderFactory _csvReaderFactory;
@@ -92,6 +96,22 @@ namespace Code2.Data.GeoIP
 			lock (_lock)
 			{
 				return _locationsRepository.Get(filter);
+			}
+		}
+
+		public Tisp? GetIsp(int ispId)
+		{
+			lock (_lock)
+			{
+				return _ispsRepository.GetSingle(ispId);
+			}
+		}
+
+		public IEnumerable<Tisp> GetIsps(Func<Tisp, bool> filter)
+		{
+			lock (_lock)
+			{
+				return _ispsRepository.Get(filter);
 			}
 		}
 
@@ -149,9 +169,9 @@ namespace Code2.Data.GeoIP
 		{
 			lock (_lock)
 			{
-				var files = GetCsvFilePaths();
+				var filePaths = GetCsvFilePaths();
 
-				if (files.ipv4block is null && files.ipv6block is null)
+				if (filePaths.BlocksIPv4 is null && filePaths.BlocksIPv6 is null)
 					OnError("Csv blocks file not found");
 
 				if (_blocksRepository.HasData) _blocksRepository.RemoveAll();
@@ -162,9 +182,10 @@ namespace Code2.Data.GeoIP
 					if (_fileSystem.FileExists(logFilePath)) _fileSystem.FileDelete(logFilePath);
 				}
 
-				AddCsvFileToRepository(_blocksRepository, files.ipv4block, Options.CsvReaderChunkSize);
-				AddCsvFileToRepository(_blocksRepository, files.ipv6block, Options.CsvReaderChunkSize);
-				AddCsvFileToRepository(_locationsRepository, files.locations, Options.CsvReaderChunkSize);
+				AddCsvFileToRepository(_blocksRepository, filePaths.BlocksIPv4, Options.CsvReaderChunkSize);
+				AddCsvFileToRepository(_blocksRepository, filePaths.BlocksIPv6, Options.CsvReaderChunkSize);
+				AddCsvFileToRepository(_locationsRepository, filePaths.Locations, Options.CsvReaderChunkSize);
+				AddCsvFileToRepository(_ispsRepository, filePaths.Isps, Options.CsvReaderChunkSize);
 			}
 		}
 
@@ -174,15 +195,17 @@ namespace Code2.Data.GeoIP
 			_fileSystem.DirectoryCreate(dataDir);
 		}
 
-		private (string? ipv4block, string? ipv6block, string? locations) GetCsvFilePaths()
+		private CsvFilePaths GetCsvFilePaths()
 		{
 			EnsureDataDirectoryExists();
 			string dataDirectory = _fileSystem.PathGetFullPath(Options.CsvDataDirectory!);
 			string[] files = _fileSystem.DirectoryGetFiles(dataDirectory, "*.*");
-			string? ipv4BlocksFilePath = string.IsNullOrEmpty(Options.CsvBlocksIPv4FileFilter) ? null : files.FirstOrDefault(x => x.Contains(Options.CsvBlocksIPv4FileFilter));
-			string? ipv6BlocksFilePath = string.IsNullOrEmpty(Options.CsvBlocksIPv6FileFilter) ? null : files.FirstOrDefault(x => x.Contains(Options.CsvBlocksIPv6FileFilter));
-			string? locationsFilePath = string.IsNullOrEmpty(Options.CsvLocationsFileFilter) ? null : files.FirstOrDefault(x => x.Contains(Options.CsvLocationsFileFilter));
-			return (ipv4BlocksFilePath, ipv6BlocksFilePath, locationsFilePath);
+			CsvFilePaths filePaths = new CsvFilePaths();
+			filePaths.BlocksIPv4 = string.IsNullOrEmpty(Options.CsvBlocksIPv4FileFilter) ? null : files.FirstOrDefault(x => x.Contains(Options.CsvBlocksIPv4FileFilter));
+			filePaths.BlocksIPv6 = string.IsNullOrEmpty(Options.CsvBlocksIPv6FileFilter) ? null : files.FirstOrDefault(x => x.Contains(Options.CsvBlocksIPv6FileFilter));
+			filePaths.Locations = string.IsNullOrEmpty(Options.CsvLocationsFileFilter) ? null : files.FirstOrDefault(x => x.Contains(Options.CsvLocationsFileFilter));
+			filePaths.Isps = string.IsNullOrEmpty(Options.CsvIspFileFilter) ? null : files.FirstOrDefault(x => x.Contains(Options.CsvIspFileFilter));
+			return filePaths;
 		}
 
 		private void ThrowOnInvalidUpdateOption()
@@ -256,6 +279,14 @@ namespace Code2.Data.GeoIP
 		{
 			using Stream stream = typeof(GeoIPServiceOptions).Assembly.GetManifestResourceStream(typeof(GeoIPServiceOptions), $"{nameof(GeoIPServiceOptions)}.json")!;
 			return JsonSerializer.Deserialize<GeoIPServiceOptions>(stream)!;
+		}
+
+		private class CsvFilePaths
+		{
+			public string? BlocksIPv4 { get; set; }
+			public string? BlocksIPv6 { get; set; }
+			public string? Locations { get; set; }
+			public string? Isps { get; set; }
 		}
 	}
 }

@@ -10,6 +10,7 @@
 		public string? CsvBlocksIPv4FileFilter { get; set; }
 		public string? CsvBlocksIPv6FileFilter { get; set; }
 		public string? CsvLocationsFileFilter { get; set; }
+		public string? CsvIspFileFilter { get; set; }
 		public int CsvReaderChunkSize { get; set; }
 		public string? CsvReaderErrorLogFile { get; set; }
 		public bool AutoUpdate { get; set; }

@@ -4,9 +4,10 @@ using System.Threading.Tasks;
 
 namespace Code2.Data.GeoIP
 {
-	public interface IGeoIPService<Tblock, Tlocation>
+	public interface IGeoIPService<Tblock, Tlocation, Tisp>
 		where Tblock : BlockBase, new()
 		where Tlocation : LocationBase, new()
+		where Tisp : IspBase, new()
 	{
 		bool HasData { get; }
 		bool IsUpdating { get; }
@@ -22,6 +23,8 @@ namespace Code2.Data.GeoIP
 		IEnumerable<Tblock> GetBlocks(Func<Tblock, bool> filter);
 		Tlocation? GetLocation(int geoNameId);
 		IEnumerable<Tlocation> GetLocations(Func<Tlocation, bool> filter);
+		Tisp? GetIsp(int ispId);
+		IEnumerable<Tisp> GetIsps(Func<Tisp, bool> filter);
 		Task LoadAsync();
 		Task UpdateFilesAsync();
 	}

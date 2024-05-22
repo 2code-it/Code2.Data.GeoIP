@@ -20,7 +20,7 @@ namespace Code2.Data.GeoIP.Internals
 		string[] DirectoryGetFiles(string path, string search);
 		void DirectoryCreate(string path);
 		bool DirectoryExists(string path);
-		string FileGetSha256Hex(Stream fileStream);
+		string FileGetSha256Hex(Stream stream);
 		void ZipArchiveExtractEntryTo(string zipFilePath, string fileFilter, string outputDirectory);
 	}
 }

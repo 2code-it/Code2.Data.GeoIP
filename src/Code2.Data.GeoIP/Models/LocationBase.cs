@@ -1,4 +1,4 @@
-﻿namespace Code2.Data.GeoIP
+﻿namespace Code2.Data.GeoIP.Models
 {
 	public class LocationBase
 	{

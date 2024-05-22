@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
 		<TargetFramework>net7.0</TargetFramework>
@@ -17,24 +17,17 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-	  <None Remove="GeoIPServiceOptions.json" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <EmbeddedResource Include="GeoIPServiceOptions.json">
+	  <EmbeddedResource Include="CsvReposOptions.json">
 	    <CopyToOutputDirectory>Never</CopyToOutputDirectory>
 	  </EmbeddedResource>
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Code2.Tools.Csv" Version="0.1.33" />
+	  <Folder Include="Models\" />
 	</ItemGroup>
 
 	<ItemGroup>
-		<None Include="..\..\README.md">
-			<Pack>True</Pack>
-			<PackagePath>\</PackagePath>
-		</None>
+	  <PackageReference Include="Code2.Tools.Csv.Repos" Version="0.1.5" />
 	</ItemGroup>
 
 </Project>

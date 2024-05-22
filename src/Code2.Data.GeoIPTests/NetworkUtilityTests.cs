@@ -1,5 +1,5 @@
-﻿using Code2.Data.GeoIP.Internals;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.Net;
 
 namespace Code2.Data.GeoIP.Tests
 {
@@ -35,6 +35,42 @@ namespace Code2.Data.GeoIP.Tests
 			networkUtility.GetIpNumberFromAddress("129.17.12.1", out mapped);
 
 			Assert.IsTrue(mapped);
+		}
+
+		[TestMethod]
+		[DataRow("2001:268:9036::/47", true)]
+		[DataRow("2001:268:9036::/132", false)]
+		[DataRow(":268:9036::/10", false)]
+		[DataRow("192.168.0.12", false)]
+		[DataRow("192.168.0.12/31", true)]
+		public void When_IsValidCidr_ValidAndInvalidValues_Expect_ValueSpecificResult(string cidr, bool expectedValue)
+		{
+			NetworkUtility networkUtility = new NetworkUtility();
+			bool actual = networkUtility.IsValidCidr(cidr);
+
+			Assert.AreEqual(expectedValue, actual);
+		}
+
+		[TestMethod]
+		public void When_GetIpNumberFromAddress_WithIPv4Address_Expect_CorrespondingNumber()
+		{
+			NetworkUtility networkUtility = new NetworkUtility();
+			string ipAddress = "129.17.12.1";
+			IPAddress ip = IPAddress.Parse(ipAddress).MapToIPv6();
+			UInt128 expected = GetNumberFromBytes(ip.GetAddressBytes());
+			UInt128 actual = networkUtility.GetIpNumberFromAddress(ipAddress, out _);
+
+			Assert.AreEqual(expected, actual);
+		}
+
+		private UInt128 GetNumberFromBytes(byte[] bytes)
+		{
+			UInt128 number = 0;
+			for (int a = 0; a < 16; a++)
+			{
+				number |= (UInt128)bytes[a] << (15 - a) * 8;
+			}
+			return number;
 		}
 	}
 }

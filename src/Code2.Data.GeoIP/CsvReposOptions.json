@@ -1,0 +1,46 @@
+{
+	"CsvDataDirectory": "./data",
+	"Files": [
+		{
+			"NameFilter": "Blocks-IPv4.csv",
+			"RepositoryTypeName": "BlocksRepository`1",
+			"TargetTypeName": "BlockBase"
+		},
+		{
+			"NameFilter": "Blocks-IPv6.csv",
+			"RepositoryTypeName": "BlocksRepository`1",
+			"TargetTypeName": "BlockBase"
+		},
+		{
+			"NameFilter": "Locations-en.csv",
+			"RepositoryTypeName": "MemoryRepository`1",
+			"TargetTypeName": "LocationBase"
+		},
+		{
+			"NameFilter": "ISP.csv",
+			"RepositoryTypeName": "MemoryRepository`1",
+			"TargetTypeName": "IspBase"
+		}
+	],
+	"UpdateTasks": [
+		{
+			"IntervalInHours": 72,
+			"TaskTypeName": "CsvUpdateTaskGeoIP",
+			"ReloadTargetTypeNames": [ "*" ],
+			"TaskProperties": {
+				"MaxmindDownloadUrl": "https://download.maxmind.com/app/geoip_download?edition_id=$(MaxmindEdition)&license_key=$(MaxmindLicenseKey)&suffix=zip",
+				"MaxmindEdition": "GeoLite2-City-CSV",
+				"MaxmindLicenseKey": "",
+				"HashCheckDownload": "false",
+				"KeepDownloadedZipFile": "true"
+			}
+		}
+	],
+	"CsvReaderOptions": {
+		"HasHeaderRow": true,
+		"IgnoreEmptyWhenDeserializing": true
+	},
+	"CsvReaderReadAmount": 5000,
+	"LoadOnStart": false,
+	"UpdateOnStart": false
+}

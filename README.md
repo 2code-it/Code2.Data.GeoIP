@@ -3,62 +3,124 @@ Service for maxmind geoip csv data which defaults to storing the data in memory.
 The csv files can be downloaded after registering at https://www.maxmind.com/.
 
 ## options
-- MaxmindLicenceKey, can be obtained after registering a free maxmind account, default: ""
-- MaxmindEdition, edition specifier GeoLite2-Country-CSV, GeoLite2-City-CSV, ..etc, default: "GeoLite2-City-CSV"
-- CsvDownloadUrl, csv download url template with placeholders for \$(MaxmindEdition) and \$(MaxmindLicenceKey), default: maxmind-template
 - CsvDataDirectory, directory to store the csv files, default: "./data"
-- CsvBlocksIPv4FileFilter, csv ipv4 blocks *file filter, default: "Blocks-IPv4.csv"
-- CsvBlocksIPv6FileFilter, csv ipv6 blocks *file filter, default: "Blocks-IPv6.csv"
-- CsvLocationsFileFilter, csv locations *file filter, default: "Locations-en.csv"
-- CsvReaderChunkSize, amount of lines to read and process, default=5000
-- CsvReaderErrorLogFile, log file for csv read errors, default: "./data/csv_error.txt"
-- AutoLoad, loads the files upon initialization when HasData=false, default: false
-- AutoUpdate, keep the csv files updated, default: false
+- CsvReaderErrorFile, path to csv error log file
+- CsvUpdaterErrorFile, path to updater error log file
+- LocationFileLanguage, locations file language, default: "en"
+- MaxmindLicenseKey, maxmind license key
+- MaxmindEdition, maxmind edition: GeoLite2-Country-CSV, GeoLite2-City-CSV, GeoIP2-Enterprise-CSV
+- MaxmindDownloadUrl, alternate download url
+- KeepDownloadedZipFile, indication to store the zipfile, default: false
+- HashCheckDownload, indication to hash check the downloaded zipfile, default: false
+- EnableUpdates, indication to enable periodic updating
+- UpdateIntervalInHours, time in hours between updates
+- UpdateOnStart, indication to run update on start, default: false
+- LoadOnStart, indication to load csv files on start, default: false
 
-*file filter is used search for a specific file and can be set to null to prevent the file from loading
-
-## usage
-As there are 2 types of csv files you can either use GeoIPServiceCity or GeoIPServiceCountry. 
-
+## sample api
 ```
-using System;
+using System.Linq;
+using Microsoft.AspNetCore.Builder;
 using Code2.Data.GeoIP;
+using Code2.Data.GeoIP.Models;
+using Code2.Tools.Csv.Repos;
+using Microsoft.Extensions.Configuration;
+
+var builder = WebApplication.CreateBuilder(args);
+
+// Add services to the container.
+var options = builder.Configuration.GetSection(nameof(GeoIPOptions)).Get<GeoIPOptions>();
+builder.Services.AddGeoIP<CityBlock, CityLocation>(options: options);
+
+var app = builder.Build();
+
+// Configure the HTTP request pipeline.
+app.MapGet("/blocks/{ipAddress}", (IRepository<CityBlock> repo, string ipAddress) => repo.GetBlock(ipAddress));
+app.MapGet("/locations/{geoNameId}", (IRepository<CityLocation> repo, int geoNameId) => repo.Get(x => x.GeoNameId == geoNameId).FirstOrDefault());
+
+await app.Services.UseGeoIPAsync();
+
+app.Run();
+
+/* 
+launchSettings.json
+      "workingDirectory": "$(OutDir)",
+      "launchBrowser": true,
+      "launchUrl": "blocks/8.8.8.8"
+
+appSettings.json
+	"GeoIPOptions": {
+		"MaxmindEdition": "GeoLite2-City-CSV",
+		"MaxmindLicenseKey": "<maxmind_license_key>", //set license key here
+		"CsvReaderErrorFile": "./csv_reader_error.log",
+		"CsvUpdaterErrorFile": "./csv_updater_error.log",
+		"EnableUpdates": true,
+		"LoadOnStart": true,
+		"UpdateOnStart": true
+	}
+*/
+```
+
+## sample console app with custom block and location classes
+```
+using Code2.Data.GeoIP;
+using Code2.Data.GeoIP.Models;
+using Code2.Tools.Csv.Repos;
+using Microsoft.Extensions.DependencyInjection;
 
 
-var geoIPService = new GeoIPServiceCity();
-// optional when manual updating csv files
-geoIPService.Options.MaxmindEdition = "GeoLite2-City-CSV"; // or GeoLite2-Country-CSV for GeoIPServiceCountry
-geoIPService.Options.MaxmindLicenseKey = "<maxmind_licence_key>";
+IServiceCollection services = new ServiceCollection();
+services.AddGeoIP<GeoIPBlock, GeoIPLocation>(options => {
+	options.MaxmindEdition = "GeoLite2-City-CSV";
+	options.MaxmindLicenseKey = "<your_license_key>"; //set license key here
+	options.CsvReaderErrorFile = "./csv_reader_error.log";
+	options.CsvUpdaterErrorFile = "./csv_updater_error.log";
+	options.EnableUpdates = true;
+	options.LoadOnStart = true;
+	options.UpdateOnStart = true;
+});
 
-if((DateTime.Now - geoIPService.GetLastFileWriteTime()).TotalDays > 10)
-{
-	await geoIPService.UpdateFilesAsync();
-}
-geoIPService.Load();
+IServiceProvider serviceProvider = services.BuildServiceProvider();
+await serviceProvider.UseGeoIPAsync();
 
-Console.Write("lookup address:");
+IRepository<GeoIPBlock> blocksRepo = serviceProvider.GetRequiredService<IRepository<GeoIPBlock>>();
+IRepository<GeoIPLocation> locationsRepo = serviceProvider.GetRequiredService<IRepository<GeoIPLocation>>();
+
+Console.WriteLine("App ready, type in an ip address and hit enter..");
+Console.CursorVisible = true;
+
 while (true)
 {
-	string? line = Console.ReadLine();
-	if (string.IsNullOrEmpty(line)) break;
-	CityBlock? cityBlock = geoIPService.GetBlock(line);
-	CityLocation? cityLocation = cityBlock is null? null: geoIPService.GetLocation(cityBlock.GeoNameId);
-	string result = cityLocation is null ? "not found" : $"{cityLocation.CountryName} {cityLocation.CityName}";
-	Console.WriteLine(result);
+	string? ipAddress = Console.ReadLine();
+	if (string.IsNullOrEmpty(ipAddress)) break;
+	var block = blocksRepo.GetBlock(ipAddress);
+	if(block is null)
+	{
+		Console.WriteLine("IP Address not found");
+	}
+	else
+	{
+		var location = locationsRepo.Get(x=>x.GeoNameId == block.GeoNameId).FirstOrDefault();
+		Console.WriteLine($"latitude: {block.Latitude}, longitude: {block.Longitude}, country: {location?.CountryName}, city: {location?.CityName}");
+	}
+}
+
+public class GeoIPLocation : LocationBase
+{
+	public string? CountryName { get; set; }
+	public string? CityName { get; set; }
+}
+
+public class GeoIPBlock : BlockBase
+{
+	public double Latitude { get; set; }
+	public double Longitude { get; set; }
 }
 ```
 
-If you're only interested in a few object attributes you can define and use your own objects as long as they are derived from LocationBase and BlockBase.
-```
+## remarks
+BlocksRepository stores the data chunked for quick access
 
-public class MyBlock: BlockBase {public int AccuracyRadius {get;set;} }
-public class MyLocation: LocationBase {public string? CityName {get;set;} }
-var service = new GeoIPService<MyBlock, MyLocation>(options);
-service.Load();
-```
-
-# remarks
-The InMemoryBlocksRepository stores the data chunked with the chunksize equal to Options.CsvReaderChunkSize
-
-# references
+## references
 https://www.maxmind.com/
+https://dev.maxmind.com/geoip/docs/databases/city-and-country

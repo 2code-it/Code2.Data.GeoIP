@@ -10,7 +10,7 @@
 		<PackageTags>geo location ip maxmind</PackageTags>
 		<RepositoryUrl>https://github.com/2code-it/Code2.Data.GeoIP.git</RepositoryUrl>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
-		<Description>Service build around maxmind geoip csv files</Description>
+		<Description>Tools and utilities for using maxmind geoip csv files</Description>
 		<Title>$(AssemblyName)</Title>
 		<PackageLicenseExpression>BSD-2-Clause</PackageLicenseExpression>
 		<AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb;</AllowedOutputExtensionsInPackageBuildOutputFolder>

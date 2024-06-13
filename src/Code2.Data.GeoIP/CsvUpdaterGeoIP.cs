@@ -8,7 +8,7 @@ namespace Code2.Data.GeoIP
 	{
 		public CsvUpdaterGeoIP(GeoIPOptions geoOptions, CsvReposOptions csvReposOptions, ICsvLoader csvLoader) : this(geoOptions, csvReposOptions, csvLoader, new FileSystem())
 		{ }
-		internal CsvUpdaterGeoIP(GeoIPOptions geoOptions, CsvReposOptions csvReposOptions, ICsvLoader csvLoader, IFileSystem fileSystem) : base(csvReposOptions, csvLoader)
+		internal CsvUpdaterGeoIP(GeoIPOptions geoOptions, CsvReposOptions csvReposOptions, ICsvLoader csvLoader, IFileSystem fileSystem) : base(csvLoader, csvReposOptions)
 		{
 			_fileSystem = fileSystem;
 			if (geoOptions.CsvUpdaterErrorFile is not null) _csvUpdateErrorFilePath = _fileSystem.PathGetFullPath(geoOptions.CsvUpdaterErrorFile);

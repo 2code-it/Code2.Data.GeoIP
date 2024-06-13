@@ -25,31 +25,7 @@ namespace Code2.Data.GeoIP
 		{
 			CsvReposOptions repoOptions = GetDefaultCsvReposOptions();
 
-			UpdateOrRemoveFileInfo(repoOptions, nameof(BlockBase), geoOptions.BlockType, geoOptions.RepositoryTypeName);
-			UpdateOrRemoveFileInfo(repoOptions, nameof(LocationBase), geoOptions.LocationType, geoOptions.RepositoryTypeName);
-			UpdateOrRemoveFileInfo(repoOptions, nameof(IspBase), geoOptions.IspType, geoOptions.RepositoryTypeName);
-
-			if (geoOptions.LocationFileLanguage is not null)
-			{
-				CsvFileInfo locationFileInfo = repoOptions.Files.FirstOrDefault(x => x.NameFilter.StartsWith("Locations")) ?? throw new InvalidOperationException("Can't set locations language, locations not configured");
-				locationFileInfo.NameFilter = $"Locations-{geoOptions.LocationFileLanguage}.csv";
-			}
-
-			if (geoOptions.EnableUpdates ?? false)
-			{
-				if (geoOptions.MaxmindDownloadUrl is not null) repoOptions.UpdateTasks[0].TaskProperties[nameof(GeoIPOptions.MaxmindDownloadUrl)] = geoOptions.MaxmindDownloadUrl;
-				if (geoOptions.MaxmindLicenseKey is not null) repoOptions.UpdateTasks[0].TaskProperties[nameof(GeoIPOptions.MaxmindLicenseKey)] = geoOptions.MaxmindLicenseKey;
-				if (geoOptions.MaxmindEdition is not null) repoOptions.UpdateTasks[0].TaskProperties[nameof(GeoIPOptions.MaxmindEdition)] = geoOptions.MaxmindEdition;
-				if (geoOptions.KeepDownloadedZipFile.HasValue) repoOptions.UpdateTasks[0].TaskProperties[nameof(GeoIPOptions.KeepDownloadedZipFile)] = geoOptions.KeepDownloadedZipFile.Value.ToString();
-				if (geoOptions.HashCheckDownload.HasValue) repoOptions.UpdateTasks[0].TaskProperties[nameof(GeoIPOptions.HashCheckDownload)] = geoOptions.HashCheckDownload.Value.ToString();
-				if (geoOptions.UpdateIntervalInHours.HasValue) repoOptions.UpdateTasks[0].IntervalInHours = geoOptions.UpdateIntervalInHours.Value;
-			}
-			else
-			{
-				repoOptions.UpdateTasks.Clear();
-			}
-			if (geoOptions.UpdateOnStart.HasValue) repoOptions.UpdateOnStart = geoOptions.UpdateOnStart.Value;
-			if (geoOptions.LoadOnStart.HasValue) repoOptions.LoadOnStart = geoOptions.LoadOnStart.Value;
+			MapOptions(geoOptions, repoOptions);
 
 			services.TryAddSingleton<ICsvLoader, CsvLoaderGeoIP>();
 			services.TryAddSingleton<ICsvUpdater, CsvUpdaterGeoIP>();
@@ -103,12 +79,47 @@ namespace Code2.Data.GeoIP
 			await serviceProvider.UseCsvReposAsync(loadOnStart, updateOnStart);
 		}
 
+		public static void ConfigureGeoIP(this IServiceProvider serviceProvider, GeoIPOptions options)
+		{
+			var repoOptions = serviceProvider.GetRequiredService<CsvReposOptions>();
+			MapOptions(options, repoOptions);
+		}
+
 		public static Tblock? GetBlock<Tblock>(this IRepository<Tblock> repository, string ipAddress)
 			where Tblock : ISubnet
 		{
 			UInt128 ipNumber = _networkUtility.GetIpNumberFromAddress(ipAddress);
 			BlocksRepository<Tblock> blocksRepository = (BlocksRepository<Tblock>)repository;
 			return blocksRepository.GetBlock(ipNumber);
+		}
+
+		private static void MapOptions(GeoIPOptions geoOptions, CsvReposOptions repoOptions)
+		{
+			UpdateOrRemoveFileInfo(repoOptions, nameof(BlockBase), geoOptions.BlockType, geoOptions.RepositoryTypeName);
+			UpdateOrRemoveFileInfo(repoOptions, nameof(LocationBase), geoOptions.LocationType, geoOptions.RepositoryTypeName);
+			UpdateOrRemoveFileInfo(repoOptions, nameof(IspBase), geoOptions.IspType, geoOptions.RepositoryTypeName);
+
+			if (geoOptions.LocationFileLanguage is not null)
+			{
+				CsvFileInfo locationFileInfo = repoOptions.Files.FirstOrDefault(x => x.NameFilter.StartsWith("Locations")) ?? throw new InvalidOperationException("Can't set locations language, locations not configured");
+				locationFileInfo.NameFilter = $"Locations-{geoOptions.LocationFileLanguage}.csv";
+			}
+
+			if (geoOptions.EnableUpdates ?? false)
+			{
+				if (geoOptions.MaxmindDownloadUrl is not null) repoOptions.UpdateTasks[0].TaskProperties[nameof(GeoIPOptions.MaxmindDownloadUrl)] = geoOptions.MaxmindDownloadUrl;
+				if (geoOptions.MaxmindLicenseKey is not null) repoOptions.UpdateTasks[0].TaskProperties[nameof(GeoIPOptions.MaxmindLicenseKey)] = geoOptions.MaxmindLicenseKey;
+				if (geoOptions.MaxmindEdition is not null) repoOptions.UpdateTasks[0].TaskProperties[nameof(GeoIPOptions.MaxmindEdition)] = geoOptions.MaxmindEdition;
+				if (geoOptions.KeepDownloadedZipFile.HasValue) repoOptions.UpdateTasks[0].TaskProperties[nameof(GeoIPOptions.KeepDownloadedZipFile)] = geoOptions.KeepDownloadedZipFile.Value.ToString();
+				if (geoOptions.HashCheckDownload.HasValue) repoOptions.UpdateTasks[0].TaskProperties[nameof(GeoIPOptions.HashCheckDownload)] = geoOptions.HashCheckDownload.Value.ToString();
+				if (geoOptions.UpdateIntervalInHours.HasValue) repoOptions.UpdateTasks[0].IntervalInHours = geoOptions.UpdateIntervalInHours.Value;
+			}
+			else
+			{
+				repoOptions.UpdateTasks.Clear();
+			}
+			if (geoOptions.UpdateOnStart.HasValue) repoOptions.UpdateOnStart = geoOptions.UpdateOnStart.Value;
+			if (geoOptions.LoadOnStart.HasValue) repoOptions.LoadOnStart = geoOptions.LoadOnStart.Value;
 		}
 
 		private static CsvReposOptions GetDefaultCsvReposOptions()

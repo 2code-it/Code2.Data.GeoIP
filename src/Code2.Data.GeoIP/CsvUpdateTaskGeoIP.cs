@@ -32,8 +32,8 @@ namespace Code2.Data.GeoIP
 			string dataDirectoryPath = GetDataDirectoryPath();
 			EnsureDirectoryExists(dataDirectoryPath);
 			string? firstCsvFile = _fileSystem.DirectoryGetFiles(dataDirectoryPath, "*.csv").FirstOrDefault();
-			DateTime lastModifiedLocal = firstCsvFile is null ? DateTime.MinValue : _fileSystem.FileGetLastWriteTime(firstCsvFile).AddHours(1);
-			if (lastModifiedLocal.AddHours(70) > DateTime.Now) return false;
+			DateTime lastModifiedLocal = firstCsvFile is null ? DateTime.MinValue : _fileSystem.FileGetLastWriteTime(firstCsvFile);
+			if (lastModifiedLocal.AddHours(80) > DateTime.Now) return false;
 			DateTime lastModifiedRemote;
 			try
 			{
@@ -43,7 +43,7 @@ namespace Code2.Data.GeoIP
 			{
 				return false;
 			}
-			return lastModifiedRemote > lastModifiedLocal;
+			return lastModifiedRemote > lastModifiedLocal.AddHours(10);
 		}
 
 		public override async Task RunAsync()

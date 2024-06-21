@@ -33,6 +33,7 @@ namespace Code2.Data.GeoIP
 			EnsureDirectoryExists(dataDirectoryPath);
 			string? firstCsvFile = _fileSystem.DirectoryGetFiles(dataDirectoryPath, "*.csv").FirstOrDefault();
 			DateTime lastModifiedLocal = firstCsvFile is null ? DateTime.MinValue : _fileSystem.FileGetLastWriteTime(firstCsvFile).AddHours(1);
+			if (lastModifiedLocal.AddHours(70) > DateTime.Now) return false;
 			DateTime lastModifiedRemote;
 			try
 			{

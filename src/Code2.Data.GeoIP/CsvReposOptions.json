@@ -24,7 +24,7 @@
 	],
 	"UpdateTasks": [
 		{
-			"IntervalInHours": 72,
+			"IntervalInHours": 3,
 			"TaskTypeName": "CsvUpdateTaskGeoIP",
 			"ReloadTargetTypeNames": [ "*" ],
 			"TaskProperties": {

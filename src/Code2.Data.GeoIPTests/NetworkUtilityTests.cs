@@ -1,7 +1,9 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Code2.Data.GeoIP;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
 using System.Net;
 
-namespace Code2.Data.GeoIP.Tests
+namespace Code2.Data.GeoIPTests
 {
 	[TestClass]
 	public class NetworkUtilityTests
@@ -32,6 +34,7 @@ namespace Code2.Data.GeoIP.Tests
 		{
 			NetworkUtility networkUtility = new NetworkUtility();
 			bool mapped;
+
 			networkUtility.GetIpNumberFromAddress("129.17.12.1", out mapped);
 
 			Assert.IsTrue(mapped);
@@ -46,9 +49,25 @@ namespace Code2.Data.GeoIP.Tests
 		public void When_IsValidCidr_ValidAndInvalidValues_Expect_ValueSpecificResult(string cidr, bool expectedValue)
 		{
 			NetworkUtility networkUtility = new NetworkUtility();
+
 			bool actual = networkUtility.IsValidCidr(cidr);
 
 			Assert.AreEqual(expectedValue, actual);
+		}
+
+		[TestMethod]
+		[DataRow("2001:268:9036::", true)]
+		[DataRow(":268:9036::", false)]
+		[DataRow("192.168.0.12", true)]
+		[DataRow("300.168.0.12", false)]
+		[DataRow("192.168.0.", false)]
+		public void When_IsIpAddress_ValidAndInvalidValues_Expect_ValueSpecificResult(string addressString, bool expectedValue)
+		{
+			NetworkUtility networkUtility = new NetworkUtility();
+
+			bool actual = networkUtility.IsValidIPAddress(addressString);
+
+			Assert.AreEqual(expectedValue, actual, $"address used: {addressString}");
 		}
 
 		[TestMethod]
@@ -58,6 +77,7 @@ namespace Code2.Data.GeoIP.Tests
 			string ipAddress = "129.17.12.1";
 			IPAddress ip = IPAddress.Parse(ipAddress).MapToIPv6();
 			UInt128 expected = GetNumberFromBytes(ip.GetAddressBytes());
+
 			UInt128 actual = networkUtility.GetIpNumberFromAddress(ipAddress, out _);
 
 			Assert.AreEqual(expected, actual);

@@ -1,0 +1,70 @@
+{
+	"UpdateIntervalInHours": 84, //3.5days
+	"DownloadUrl": "https://download.maxmind.com/app/geoip_download?edition_id=$(MaxmindEdition)&license_key=$(MaxmindLicenseKey)&suffix=zip",
+	"DefaultLanguage":  "en",
+	"SupportedLanguages": [ "de", "en", "es", "fr", "ja", "pt-BR", "ru", "zh-CN" ],
+	"Files": [
+		{
+			"Edition": "GeoLite2-Country-CSV",
+			"Name": "GeoLite2-Country-Blocks-IPv4.CSV",
+			"TypeName": "CountryBlock",
+			"BaseTypeName": "BlockBase"
+		},
+		{
+			"Edition": "GeoLite2-Country-CSV",
+			"Name": "GeoLite2-Country-Blocks-IPv6.CSV",
+			"TypeName": "CountryBlock",
+			"BaseTypeName": "BlockBase"
+		},
+		{
+			"Edition": "GeoLite2-Country-CSV",
+			"Name": "GeoLite2-Country-Locations-XX.CSV",
+			"TypeName": "CountryLocation",
+			"BaseTypeName": "LocationBase"
+		},
+
+		{
+			"Edition": "GeoLite2-City-CSV",
+			"Name": "GeoLite2-City-Blocks-IPv4.CSV",
+			"TypeName": "CityBlock",
+			"BaseTypeName": "BlockBase"
+		},
+		{
+			"Edition": "GeoLite2-City-CSV",
+			"Name": "GeoLite2-City-Blocks-IPv6.CSV",
+			"TypeName": "CityBlock",
+			"BaseTypeName": "BlockBase"
+		},
+		{
+			"Edition": "GeoLite2-City-CSV",
+			"Name": "GeoLite2-City-Locations-XX.CSV",
+			"TypeName": "CityLocation",
+			"BaseTypeName": "LocationBase"
+		},
+
+		{
+			"Edition": "GeoIP2-Enterprise-CSV",
+			"Name": "GeoIP2-Enterprise-Blocks-IPv4.CSV",
+			"TypeName": "EnterpriseBlock",
+			"BaseTypeName": "BlockBase"
+		},
+		{
+			"Edition": "GeoIP2-Enterprise-CSV",
+			"Name": "GeoIP2-Enterprise-Blocks-IPv6.CSV",
+			"TypeName": "EnterpriseBlock",
+			"BaseTypeName": "BlockBase"
+		},
+		{
+			"Edition": "GeoIP2-Enterprise-CSV",
+			"Name": "GeoIP2-Enterprise-Locations-XX.CSV",
+			"TypeName": "EnterpriseLocation",
+			"BaseTypeName": "LocationBase"
+		},
+		{
+			"Edition": "GeoIP2-Enterprise-CSV",
+			"Name": "GeoIP2-Enterprise-ISP.CSV",
+			"TypeName": "EnterpriseIsp",
+			"BaseTypeName": "IspBase"
+		}
+	]
+}

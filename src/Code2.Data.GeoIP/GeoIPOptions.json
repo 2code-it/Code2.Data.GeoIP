@@ -1,0 +1,13 @@
+{
+	"DataDirectory": "./data",
+	"MaxmindLicenseKey": null,
+	"MaxmindEdition": "GeoLite2-Country-CSV",
+	"MaxmindDownloadUrl": null,
+	"HashCheckDownload": false,
+	"Language": null,
+	"UpdateIntervalInHours": 84,
+	"RetryIntervalInHours": 3,
+	"EnableUpdates": true,
+	"UpdateOnStart": true,
+	"LoadOnStart": true
+}

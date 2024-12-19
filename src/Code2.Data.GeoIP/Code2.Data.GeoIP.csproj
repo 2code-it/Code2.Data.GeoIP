@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFramework>net7.0</TargetFramework>
+		<TargetFramework>net8.0</TargetFramework>
 		<ImplicitUsings>disable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 
@@ -14,10 +14,20 @@
 		<Title>$(AssemblyName)</Title>
 		<PackageLicenseExpression>BSD-2-Clause</PackageLicenseExpression>
 		<AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb;</AllowedOutputExtensionsInPackageBuildOutputFolder>
+		<Deterministic>true</Deterministic>
 	</PropertyGroup>
 
 	<ItemGroup>
+	  <None Remove="GeoIPOptions.json" />
+	  <None Remove="MaxmindMetaOptions.json" />
+	</ItemGroup>
+
+	<ItemGroup>
 	  <EmbeddedResource Include="CsvReposOptions.json">
+	    <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+	  </EmbeddedResource>
+	  <EmbeddedResource Include="GeoIPOptions.json" />
+	  <EmbeddedResource Include="MaxmindMetaOptions.json">
 	    <CopyToOutputDirectory>Never</CopyToOutputDirectory>
 	  </EmbeddedResource>
 	</ItemGroup>
@@ -34,7 +44,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Code2.Tools.Csv.Repos" Version="*" />
+	  <ProjectReference Include="..\..\..\Code2.Tools.Csv.Repos\src\Code2.Tools.Csv.Repos\Code2.Tools.Csv.Repos.csproj" />
 	</ItemGroup>
 
 </Project>

@@ -42,11 +42,11 @@ namespace Code2.Data.GeoIP
 				Dictionary<string, string> headers = GetHeadersOnlyAsync(Url, RequestHeaders).Result;
 				if (!headers.TryGetValue(_http_header_last_modified, out string? remoteModifiedString))
 				{
-					return Result.Cancel("Last modified header not found");
+					return Result.Error("Last modified header not found");
 				}
 				if (!DateTime.TryParseExact(remoteModifiedString, "r", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime remoteModified))
 				{
-					return Result.Cancel($"Can't parse last modified date: {remoteModifiedString}");
+					return Result.Error($"Can't parse last modified date: {remoteModifiedString}");
 				}
 				if (localModified is not null && localModified >= remoteModified.ToLocalTime())
 				{

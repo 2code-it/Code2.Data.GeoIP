@@ -2,6 +2,6 @@
 
 namespace Code2.Data.GeoIP.Repositories;
 
-public class CountryLocationsRepository : LocationsRepository<CountryLocation>
+public class CountryLocationsRepository : Repository<CountryLocation>
 {
 }

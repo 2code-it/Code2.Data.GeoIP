@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace Code2.Data.GeoIP.Repositories;
 
-public class LocationsRepository<T> : ICsvRepository<T>
+public class Repository<T> : ICsvRepository<T>
 {
 	private readonly List<T> _items = new List<T>();
 	private readonly object _lock = new object();

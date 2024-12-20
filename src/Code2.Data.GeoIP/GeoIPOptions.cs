@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Code2.Data.GeoIP;
+﻿namespace Code2.Data.GeoIP;
 
 public class GeoIPOptions
 {

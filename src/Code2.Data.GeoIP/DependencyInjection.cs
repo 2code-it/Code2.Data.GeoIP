@@ -15,13 +15,14 @@ public static class DependencyInjection
 
 	public static IServiceCollection AddGeoIP(this IServiceCollection services, GeoIPOptions options)
 	{
-		var optionsManager = new OptionsManager();
+		var networkUtility = new NetworkUtility();
+		var optionsManager = new OptionsManager(networkUtility);
 		optionsManager.Configure(options);
 		CsvReposOptions csvReposOptions = optionsManager.GetCsvReposOptions();
 		csvReposOptions.ServiceCollection = services;
 		services.AddCsvRepos(csvReposOptions);
 		services.AddSingleton<IOptionsManager>(optionsManager);
-		services.AddSingleton<INetworkUtility, NetworkUtility>();
+		services.AddSingleton<INetworkUtility>(networkUtility);
 		return services;
 	}
 

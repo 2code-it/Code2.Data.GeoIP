@@ -7,19 +7,21 @@ using System.Linq;
 namespace Code2.Data.GeoIP;
 public class OptionsManager : IOptionsManager
 {
-
-	public OptionsManager() : this(new Serializer(), new FileSystem())
+	public OptionsManager(INetworkUtility networkUtility) : this(networkUtility, new Serializer(), new FileSystem())
 	{ }
 
-	internal OptionsManager(ISerializer serializer, IFileSystem fileSystem)
+	internal OptionsManager(INetworkUtility networkUtility, ISerializer serializer, IFileSystem fileSystem)
 	{
+		_networkUtility = networkUtility;
 		_serializer = serializer;
 		_fileSystem = fileSystem;
-		_geoIPOptions = new();
 		_maxmindOptions = serializer.DeserializerFromFileOrResource<MaxmindMetaOptions>();
 		_csvReposOptions = serializer.DeserializerFromFileOrResource<CsvReposOptions>();
+		_geoIPOptions = new();
+		Reset();
 	}
 
+	private readonly INetworkUtility _networkUtility;
 	private readonly ISerializer _serializer;
 	private readonly IFileSystem _fileSystem;
 	private readonly MaxmindMetaOptions _maxmindOptions;
@@ -51,7 +53,7 @@ public class OptionsManager : IOptionsManager
 	public void Configure(GeoIPOptions options)
 	{
 		Update(options);
-		_csvReposOptions = CreateCsvReposOptions(options);
+		_csvReposOptions = CreateCsvReposOptions(_geoIPOptions);
 	}
 
 
@@ -107,12 +109,26 @@ public class OptionsManager : IOptionsManager
 		csvReposOptions.UpdateTasks![0].RetryIntervalInMinutes = options.RetryIntervalInHours!.Value * 60;
 		csvReposOptions.UpdateTasks![0].AffectedTypeNames = files.Select(x => x.TypeName).ToArray();
 
+		csvReposOptions.OnDataLoaded = OnDataLoaded;
+
 		return csvReposOptions;
+	}
+
+	private void OnDataLoaded(DataLoadedEventArgs e)
+	{
+		if (!e.Type.IsAssignableTo(typeof(ISubnet))) return;
+		ISubnet[] data = (ISubnet[])e.Data;
+		foreach (var subnet in data)
+		{
+			var range = _networkUtility.GetRangeFromCidr(subnet.Network);
+			subnet.BeginAddress = range.begin;
+			subnet.EndAddress = range.end;
+		}
 	}
 
 	private CsvFileOptions CreateCsvFileOptions(MaxmindEdititionFileInfo fileInfo)
 	{
-		string fileName = fileInfo.Name.Contains("XX")? fileInfo.Name.Replace("XX", _geoIPOptions.Language): fileInfo.Name;
+		string fileName = fileInfo.Name.Contains("XX") ? fileInfo.Name.Replace("XX", _geoIPOptions.Language) : fileInfo.Name;
 		string filePath = _fileSystem.PathCombine(_geoIPOptions.DataDirectory!, fileName);
 		_baseTypeNameMappings.TryGetValue(fileInfo.BaseTypeName, out string? itemTypeName);
 		itemTypeName ??= fileInfo.TypeName;

@@ -5,14 +5,9 @@ using System.Linq;
 
 namespace Code2.Data.GeoIP.Repositories
 {
-	public class BlocksRepository<T> : ICsvRepository<T> where T : ISubnet
+	public class BlocksRepository<T> : ICsvRepository<T>
+		where T : ISubnet
 	{
-		public BlocksRepository(INetworkUtility networkUtility)
-		{
-			_networkUtility = networkUtility;
-		}
-
-		private readonly INetworkUtility _networkUtility;
 		private readonly List<IEnumerable<T>> _chunks = new List<IEnumerable<T>>();
 		private readonly object _lock = new object();
 
@@ -20,12 +15,6 @@ namespace Code2.Data.GeoIP.Repositories
 		{
 			lock (_lock)
 			{
-				foreach (T item in items)
-				{
-					var range = _networkUtility.GetRangeFromCidr(item.Network);
-					item.BeginAddress = range.begin;
-					item.EndAddress = range.end;
-				}
 				_chunks.Add(items);
 			}
 		}

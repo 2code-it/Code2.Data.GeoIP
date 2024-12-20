@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.IO.Compression;
+using System.Linq;
 using System.Security.Cryptography;
 
 namespace Code2.Data.GeoIP.Internals;
@@ -19,8 +20,12 @@ internal class FileSystem : IFileSystem
 	public Stream FileOpenRead(string path)
 		=> File.OpenRead(path);
 
-	public Stream? GetManifestResourceStream(Type type, string name)
-		=> type.Assembly.GetManifestResourceStream(type, name);
+	public Stream? GetManifestResourceStream(string fileName)
+	{
+		string? name = typeof(FileSystem).Assembly.GetManifestResourceNames().Where(x => x.EndsWith(fileName)).FirstOrDefault();
+		if (name is null) return null;
+		return typeof(FileSystem).Assembly.GetManifestResourceStream(name);
+	}
 
 	public string FileGetSha256Hex(string filePath)
 	{

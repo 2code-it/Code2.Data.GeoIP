@@ -17,8 +17,9 @@ internal class Serializer : ISerializer
 	public T DeserializerFromFileOrResource<T>()
 	{
 		Type type = typeof(T);
-		string filePath = _fileSystem.PathGetFullPath($"./{type.Name}.json");
-		using Stream? stream = _fileSystem.FileExists(filePath) ? _fileSystem.FileOpenRead(filePath) : _fileSystem.GetManifestResourceStream(type, $"{type.Name}.json");
+		string fileName = $"{type.Name}.json";
+		string filePath = _fileSystem.PathGetFullPath($"./{fileName}");
+		using Stream? stream = _fileSystem.FileExists(filePath) ? _fileSystem.FileOpenRead(filePath) : _fileSystem.GetManifestResourceStream(fileName);
 		if (stream is null) throw new InvalidOperationException($"{type.Name} not configured as resource or file");
 		return JsonSerializer.Deserialize<T>(stream) ?? throw new InvalidOperationException($"{type.Name} is null");
 	}

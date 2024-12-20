@@ -96,7 +96,7 @@ public class OptionsManager : IOptionsManager
 		var files = _maxmindOptions.Files.Where(x => x.Edition == options.MaxmindEdition).ToArray();
 		csvReposOptions.Files = files.Select(CreateCsvFileOptions).ToArray();
 
-		Dictionary<string, string> taskProperties = new Dictionary<string, string>();
+		Dictionary<string, string> taskProperties = new();
 		taskProperties.Add(nameof(GeoIPUpdateTask.OutputDirectory), options.DataDirectory!);
 		taskProperties.Add(nameof(GeoIPUpdateTask.MaxmindDownloadUrl), options.MaxmindDownloadUrl!);
 		taskProperties.Add(nameof(GeoIPUpdateTask.MaxmindEdition), options.MaxmindEdition!);
@@ -112,7 +112,7 @@ public class OptionsManager : IOptionsManager
 
 	private CsvFileOptions CreateCsvFileOptions(MaxmindEdititionFileInfo fileInfo)
 	{
-		string fileName = fileInfo.Name.IndexOf("XX") == -1 ? fileInfo.Name : fileInfo.Name.Replace("XX", _geoIPOptions.Language);
+		string fileName = fileInfo.Name.Contains("XX")? fileInfo.Name.Replace("XX", _geoIPOptions.Language): fileInfo.Name;
 		string filePath = _fileSystem.PathCombine(_geoIPOptions.DataDirectory!, fileName);
 		_baseTypeNameMappings.TryGetValue(fileInfo.BaseTypeName, out string? itemTypeName);
 		itemTypeName ??= fileInfo.TypeName;

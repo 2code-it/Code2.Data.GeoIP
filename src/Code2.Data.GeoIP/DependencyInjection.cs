@@ -15,19 +15,19 @@ public static class DependencyInjection
 
 	public static IServiceCollection AddGeoIP(this IServiceCollection services, GeoIPOptions options)
 	{
-		IOptionsManager optionsManager = new OptionsManager();
+		var optionsManager = new OptionsManager();
 		optionsManager.Configure(options);
 		CsvReposOptions csvReposOptions = optionsManager.GetCsvReposOptions();
 		csvReposOptions.ServiceCollection = services;
 		services.AddCsvRepos(csvReposOptions);
-		services.AddSingleton(optionsManager);
+		services.AddSingleton<IOptionsManager>(optionsManager);
 		services.AddSingleton<INetworkUtility, NetworkUtility>();
 		return services;
 	}
 
 	public static IServiceProvider UseGeoIP(this IServiceProvider serviceProvider)
 	{
-		IOptionsManager optionsManager = serviceProvider.GetRequiredService<OptionsManager>();
+		IOptionsManager optionsManager = serviceProvider.GetRequiredService<IOptionsManager>();
 		var geoIPOptions = optionsManager.GetGeoIPOptions();
 		bool updateOnStart = geoIPOptions.UpdateOnStart ?? false;
 		bool loadOnstart = geoIPOptions.LoadOnStart ?? false;

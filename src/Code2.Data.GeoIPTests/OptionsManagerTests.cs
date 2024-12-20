@@ -46,11 +46,11 @@ public class OptionsManagerTests
 		optionsManager.Configure(geoIPOptions);
 		var csvReposOptions = optionsManager.GetCsvReposOptions();
 
-		var languageFileMaxmind = maxmindOptions.Files.FirstOrDefault(x => x.Edition == geoIPOptions.MaxmindEdition && x.Name.IndexOf("XX") != -1);
+		var languageFileMaxmind = maxmindOptions.Files.FirstOrDefault(x => x.Edition == geoIPOptions.MaxmindEdition && x.Name.Contains("XX"));
 		Assert.IsNotNull(languageFileMaxmind);
 		var languageFileCsvRepos = csvReposOptions.Files!.FirstOrDefault(x => x.ItemTypeName == languageFileMaxmind.TypeName);
 		Assert.IsNotNull(languageFileCsvRepos);
-		Assert.IsTrue(languageFileCsvRepos.FilePath.IndexOf(geoIPOptions.Language) != -1);
+		Assert.IsTrue(languageFileCsvRepos.FilePath.Contains(geoIPOptions.Language));
 	}
 
 	[TestMethod]
@@ -97,7 +97,7 @@ public class OptionsManagerTests
 		Assert.AreEqual(geoIPOptions.LocationTypeName, csvReposOptions.Files![1].ItemTypeName);
 	}
 
-	private ISerializer GetSerializerSubstituteWithDefaultOptions()
+	private static ISerializer GetSerializerSubstituteWithDefaultOptions()
 	{
 		var serializer = Substitute.For<ISerializer>();
 		serializer.DeserializerFromFileOrResource<GeoIPOptions>().Returns(GetDefaultGeoIPOptions());
@@ -106,7 +106,7 @@ public class OptionsManagerTests
 		return serializer;
 	}
 
-	private GeoIPOptions GetDefaultGeoIPOptions() => new()
+	private static GeoIPOptions GetDefaultGeoIPOptions() => new()
 	{
 		DataDirectory = "./data",
 		MaxmindLicenseKey = "license1",
@@ -121,7 +121,7 @@ public class OptionsManagerTests
 		LoadOnStart = true
 	};
 
-	private CsvReposOptions GetDefaultCsvReposOptions() => new()
+	private static CsvReposOptions GetDefaultCsvReposOptions() => new()
 	{
 		DefaultReaderOptions = new()
 		{
@@ -140,7 +140,7 @@ public class OptionsManagerTests
 		}
 	};
 
-	private MaxmindMetaOptions GetDefaultMaxmindMetaOptions() => new()
+	private static MaxmindMetaOptions GetDefaultMaxmindMetaOptions() => new()
 	{
 		UpdateIntervalInHours = 12,
 		DownloadUrl = "http://download.it/",

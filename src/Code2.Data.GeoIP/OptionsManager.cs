@@ -83,6 +83,8 @@ public class OptionsManager : IOptionsManager
 		if (options.EnableUpdates is not null) _geoIPOptions.EnableUpdates = options.EnableUpdates;
 		if (options.UpdateOnStart is not null) _geoIPOptions.UpdateOnStart = options.UpdateOnStart;
 		if (options.LoadOnStart is not null) _geoIPOptions.LoadOnStart = options.LoadOnStart;
+		if (options.UseTransientRepositories is not null) _geoIPOptions.UseTransientRepositories = options.UseTransientRepositories;
+
 		_baseTypeNameMappings = new()
 		{
 			{ _block_base_type_name, _geoIPOptions.BlockTypeName },
@@ -135,7 +137,8 @@ public class OptionsManager : IOptionsManager
 		return new CsvFileOptions
 		{
 			ItemTypeName = itemTypeName,
-			FilePath = filePath
+			FilePath = filePath,
+			IsTransientRepository = _geoIPOptions.UseTransientRepositories ?? false
 		};
 	}
 }

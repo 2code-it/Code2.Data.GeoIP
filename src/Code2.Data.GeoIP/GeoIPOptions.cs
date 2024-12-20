@@ -16,4 +16,5 @@ public class GeoIPOptions
 	public bool? EnableUpdates { get; set; }
 	public bool? UpdateOnStart { get; set; }
 	public bool? LoadOnStart { get; set; }
+	public bool? UseTransientRepositories { get; set; }
 }

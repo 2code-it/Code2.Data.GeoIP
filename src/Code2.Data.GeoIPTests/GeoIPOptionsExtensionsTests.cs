@@ -12,9 +12,9 @@ public class GeoIPOptionsExtensionsTests
 	{
 		GeoIPOptions options = new();
 
-		options.UseBlockType<TestItem>();
+		options.UseBlockType<TestBlock>();
 
-		Assert.AreEqual(typeof(TestItem).FullName, options.BlockTypeName);
+		Assert.AreEqual(typeof(TestBlock).FullName, options.BlockTypeName);
 	}
 
 	[TestMethod]
@@ -22,9 +22,9 @@ public class GeoIPOptionsExtensionsTests
 	{
 		GeoIPOptions options = new();
 
-		options.UseLocationType<TestItem>();
+		options.UseLocationType<TestLocation>();
 
-		Assert.AreEqual(typeof(TestItem).FullName, options.LocationTypeName);
+		Assert.AreEqual(typeof(TestLocation).FullName, options.LocationTypeName);
 	}
 
 	[TestMethod]
@@ -32,9 +32,9 @@ public class GeoIPOptionsExtensionsTests
 	{
 		GeoIPOptions options = new();
 
-		options.UseIspType<TestItem>();
+		options.UseIspType<TestIsp>();
 
-		Assert.AreEqual(typeof(TestItem).FullName, options.IspTypeName);
+		Assert.AreEqual(typeof(TestIsp).FullName, options.IspTypeName);
 	}
 
 	[TestMethod]
@@ -42,10 +42,10 @@ public class GeoIPOptionsExtensionsTests
 	{
 		GeoIPOptions options = new();
 
-		options.UseTypes<TestItem, TestItem, TestItem>();
+		options.UseTypes<TestBlock, TestLocation, TestIsp>();
 
-		Assert.AreEqual(typeof(TestItem).FullName, options.BlockTypeName);
-		Assert.AreEqual(typeof(TestItem).FullName, options.LocationTypeName);
-		Assert.AreEqual(typeof(TestItem).FullName, options.IspTypeName);
+		Assert.AreEqual(typeof(TestBlock).FullName, options.BlockTypeName);
+		Assert.AreEqual(typeof(TestLocation).FullName, options.LocationTypeName);
+		Assert.AreEqual(typeof(TestIsp).FullName, options.IspTypeName);
 	}
 }

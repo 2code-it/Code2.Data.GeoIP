@@ -18,18 +18,15 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-	  <None Remove="GeoIPOptions.json" />
-	  <None Remove="MaxmindMetaOptions.json" />
+		<None Remove="CsvReposOptions.json" />
+		<None Remove="GeoIPOptions.json" />
+		<None Remove="MaxmindMetaOptions.json" />
 	</ItemGroup>
 
 	<ItemGroup>
-	  <EmbeddedResource Include="CsvReposOptions.json">
-	    <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-	  </EmbeddedResource>
-	  <EmbeddedResource Include="GeoIPOptions.json" />
-	  <EmbeddedResource Include="MaxmindMetaOptions.json">
-	    <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-	  </EmbeddedResource>
+		<EmbeddedResource Include="CsvReposOptions.json" CopyToOutputDirectory="Never" />
+		<EmbeddedResource Include="GeoIPOptions.json" CopyToOutputDirectory="Never" />
+		<EmbeddedResource Include="MaxmindMetaOptions.json" CopyToOutputDirectory="Never" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -40,11 +37,11 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Folder Include="Models\" />
+		<Folder Include="Models\" />
 	</ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\..\..\Code2.Tools.Csv.Repos\src\Code2.Tools.Csv.Repos\Code2.Tools.Csv.Repos.csproj" />
+		<PackageReference Include="Code2.Tools.Csv.Repos" Version="0.3.10" />
 	</ItemGroup>
 
 </Project>

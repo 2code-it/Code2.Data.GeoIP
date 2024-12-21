@@ -16,7 +16,8 @@ public class OptionsManagerTests
 	{
 		ISerializer serializer = GetSerializerSubstituteWithDefaultOptions();
 		IFileSystem fileSystem = Substitute.For<IFileSystem>();
-		OptionsManager optionsManager = new OptionsManager(serializer, fileSystem);
+		INetworkUtility networkUtility = Substitute.For<INetworkUtility>();
+		OptionsManager optionsManager = new OptionsManager(networkUtility, serializer, fileSystem);
 		GeoIPOptions geoIPOptions = GetDefaultGeoIPOptions();
 		MaxmindMetaOptions maxmindOptions = GetDefaultMaxmindMetaOptions();
 		geoIPOptions.Language = "de";
@@ -36,7 +37,8 @@ public class OptionsManagerTests
 	{
 		ISerializer serializer = GetSerializerSubstituteWithDefaultOptions();
 		IFileSystem fileSystem = Substitute.For<IFileSystem>();
-		OptionsManager optionsManager = new OptionsManager(serializer, fileSystem);
+		INetworkUtility networkUtility = Substitute.For<INetworkUtility>();
+		OptionsManager optionsManager = new OptionsManager(networkUtility, serializer, fileSystem);
 		GeoIPOptions geoIPOptions = GetDefaultGeoIPOptions();
 		MaxmindMetaOptions maxmindOptions = GetDefaultMaxmindMetaOptions();
 		geoIPOptions.Language = "de";
@@ -59,7 +61,8 @@ public class OptionsManagerTests
 	{
 		ISerializer serializer = GetSerializerSubstituteWithDefaultOptions();
 		IFileSystem fileSystem = Substitute.For<IFileSystem>();
-		OptionsManager optionsManager = new OptionsManager(serializer, fileSystem);
+		INetworkUtility networkUtility = Substitute.For<INetworkUtility>();
+		OptionsManager optionsManager = new OptionsManager(networkUtility, serializer, fileSystem);
 		GeoIPOptions geoIPOptions = GetDefaultGeoIPOptions();
 		geoIPOptions.MaxmindEdition = "edition3";
 
@@ -72,7 +75,8 @@ public class OptionsManagerTests
 	{
 		ISerializer serializer = GetSerializerSubstituteWithDefaultOptions();
 		IFileSystem fileSystem = Substitute.For<IFileSystem>();
-		OptionsManager optionsManager = new OptionsManager(serializer, fileSystem);
+		INetworkUtility networkUtility = Substitute.For<INetworkUtility>();
+		OptionsManager optionsManager = new OptionsManager(networkUtility, serializer, fileSystem);
 		GeoIPOptions geoIPOptions = GetDefaultGeoIPOptions();
 		geoIPOptions.MaxmindEdition = "xx";
 
@@ -84,7 +88,8 @@ public class OptionsManagerTests
 	{
 		ISerializer serializer = GetSerializerSubstituteWithDefaultOptions();
 		IFileSystem fileSystem = Substitute.For<IFileSystem>();
-		OptionsManager optionsManager = new OptionsManager(serializer, fileSystem);
+		INetworkUtility networkUtility = Substitute.For<INetworkUtility>();
+		OptionsManager optionsManager = new OptionsManager(networkUtility, serializer, fileSystem);
 		GeoIPOptions geoIPOptions = GetDefaultGeoIPOptions();
 		geoIPOptions.BlockTypeName = "TestBlock";
 		geoIPOptions.LocationTypeName = "TestLocation";

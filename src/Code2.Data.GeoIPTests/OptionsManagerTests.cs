@@ -97,6 +97,23 @@ public class OptionsManagerTests
 		Assert.AreEqual(geoIPOptions.LocationTypeName, csvReposOptions.Files![1].ItemTypeName);
 	}
 
+	[TestMethod]
+	public void Configure_When_UseTransientRepositoriesSet_Expect_FileInfoIsTransientRepositoryTrue()
+	{
+		ISerializer serializer = GetSerializerSubstituteWithDefaultOptions();
+		IFileSystem fileSystem = Substitute.For<IFileSystem>();
+		INetworkUtility networkUtility = Substitute.For<INetworkUtility>();
+		OptionsManager optionsManager = new OptionsManager(networkUtility, serializer, fileSystem);
+		GeoIPOptions geoIPOptions = GetDefaultGeoIPOptions();
+		geoIPOptions.MaxmindEdition = "edition1";
+		geoIPOptions.UseTransientRepositories = true;
+
+		optionsManager.Configure(geoIPOptions);
+		var csvReposOptions = optionsManager.GetCsvReposOptions();
+
+		Assert.IsTrue(csvReposOptions.Files![0].IsTransientRepository);
+	}
+
 	private static ISerializer GetSerializerSubstituteWithDefaultOptions()
 	{
 		var serializer = Substitute.For<ISerializer>();

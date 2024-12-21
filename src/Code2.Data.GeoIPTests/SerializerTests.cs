@@ -34,11 +34,11 @@ public class SerializerTests
 		Serializer serializer = new Serializer(fileSystem);
 		using Stream stream = GetStreamFromText("{}");
 		fileSystem.FileExists(Arg.Any<string>()).Returns(false);
-		fileSystem.GetManifestResourceStream(Arg.Any<Type>(), Arg.Any<string>()).Returns(stream);
+		fileSystem.GetManifestResourceStream(Arg.Any<string>()).Returns(stream);
 
 		var item = serializer.DeserializerFromFileOrResource<TestItem>();
 
-		fileSystem.Received(1).GetManifestResourceStream(Arg.Any<Type>(), Arg.Any<string>());
+		fileSystem.Received(1).GetManifestResourceStream(Arg.Any<string>());
 	}
 
 	[TestMethod]
@@ -61,12 +61,10 @@ public class SerializerTests
 		IFileSystem fileSystem = Substitute.For<IFileSystem>();
 		Serializer serializer = new Serializer(fileSystem);
 		fileSystem.FileExists(Arg.Any<string>()).Returns(false);
-		fileSystem.GetManifestResourceStream(Arg.Any<Type>(), Arg.Any<string>()).Returns((Stream?)null);
+		fileSystem.GetManifestResourceStream(Arg.Any<string>()).Returns((Stream?)null);
 
 		var item = serializer.DeserializerFromFileOrResource<TestItem>();
 	}
-
-
 
 
 	private Stream GetStreamFromText(string text)

@@ -62,7 +62,7 @@ public class GeoIPUpdateTaskTests
 	}
 
 	[TestMethod]
-	public void OnBeforeRun_When_LastmodifiedHeaderMissing_Expect_ResultCancelled()
+	public void OnBeforeRun_When_LastmodifiedHeaderMissing_Expect_ResultError()
 	{
 		IFileSystem fileSystem = Substitute.For<IFileSystem>();
 		TestGeoIPUpdateTask updateTask = new TestGeoIPUpdateTask(fileSystem);
@@ -71,11 +71,11 @@ public class GeoIPUpdateTaskTests
 
 		Console.WriteLine("Result.Message: {0}", result?.Message);
 		Assert.IsNotNull(result);
-		Assert.AreEqual(ResultState.Cancelled, result.State);
+		Assert.AreEqual(ResultState.Error, result.State);
 	}
 
 	[TestMethod]
-	public void OnBeforeRun_When_LastmodifiedHeaderValueInvalid_Expect_ResultCancelled()
+	public void OnBeforeRun_When_LastmodifiedHeaderValueInvalid_Expect_ResultError()
 	{
 		IFileSystem fileSystem = Substitute.For<IFileSystem>();
 		TestGeoIPUpdateTask updateTask = new TestGeoIPUpdateTask(fileSystem);
@@ -86,7 +86,7 @@ public class GeoIPUpdateTaskTests
 
 		Console.WriteLine("Result.Message: {0}", result?.Message);
 		Assert.IsNotNull(result);
-		Assert.AreEqual(ResultState.Cancelled, result.State);
+		Assert.AreEqual(ResultState.Error, result.State);
 	}
 
 	[TestMethod]

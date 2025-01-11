@@ -1,5 +1,6 @@
 {
 	"UpdateIntervalInHours": 84,
+	"RetryIntervalInHours":  3,
 	"DownloadUrl": "https://download.maxmind.com/app/geoip_download?edition_id=$(MaxmindEdition)&license_key=$(MaxmindLicenseKey)&suffix=zip",
 	"DefaultLanguage":  "en",
 	"SupportedLanguages": [ "de", "en", "es", "fr", "ja", "pt-BR", "ru", "zh-CN" ],

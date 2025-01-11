@@ -16,7 +16,7 @@ namespace Code2.Data.GeoIPTests
 		[DataRow("2001:218:c400::/127", 127, false)]
 		[DataRow("2001:218:c400::/96", 96, false)]
 		[DataRow("2001:268:9036::/47", 47, false)]
-		public void When_GetRangeFromCidr_WithAnyAddress_Expect_CalculatedRangeSize(string cidr, int maskBits, bool isIPv4)
+		public void GetRangeFromCidr_When_WithAnyAddress_Expect_CalculatedRangeSize(string cidr, int maskBits, bool isIPv4)
 		{
 			NetworkUtility networkUtility = new NetworkUtility();
 
@@ -30,12 +30,11 @@ namespace Code2.Data.GeoIPTests
 		}
 
 		[TestMethod]
-		public void When_GetIpNumberFromAddress_WithIPv4Address_Expect_MappedToIPv6()
+		public void GetIpNumberFromAddress_When_WithIPv4Address_Expect_MappedToIPv6()
 		{
 			NetworkUtility networkUtility = new NetworkUtility();
-			bool mapped;
 
-			networkUtility.GetIpNumberFromAddress("129.17.12.1", out mapped);
+			networkUtility.GetIpNumberFromAddress("129.17.12.1", out bool mapped);
 
 			Assert.IsTrue(mapped);
 		}
@@ -46,7 +45,7 @@ namespace Code2.Data.GeoIPTests
 		[DataRow(":268:9036::/10", false)]
 		[DataRow("192.168.0.12", false)]
 		[DataRow("192.168.0.12/31", true)]
-		public void When_IsValidCidr_ValidAndInvalidValues_Expect_ValueSpecificResult(string cidr, bool expectedValue)
+		public void IsValidCidr_When_ValidAndInvalidValues_Expect_ValueSpecificResult(string cidr, bool expectedValue)
 		{
 			NetworkUtility networkUtility = new NetworkUtility();
 
@@ -61,7 +60,7 @@ namespace Code2.Data.GeoIPTests
 		[DataRow("192.168.0.12", true)]
 		[DataRow("300.168.0.12", false)]
 		[DataRow("192.168.0.", false)]
-		public void When_IsIpAddress_ValidAndInvalidValues_Expect_ValueSpecificResult(string addressString, bool expectedValue)
+		public void IsIpAddress_When_ValidAndInvalidValues_Expect_ValueSpecificResult(string addressString, bool expectedValue)
 		{
 			NetworkUtility networkUtility = new NetworkUtility();
 
@@ -71,7 +70,7 @@ namespace Code2.Data.GeoIPTests
 		}
 
 		[TestMethod]
-		public void When_GetIpNumberFromAddress_WithIPv4Address_Expect_CorrespondingNumber()
+		public void GetIpNumberFromAddress_When_WithIPv4Address_Expect_CorrespondingNumber()
 		{
 			NetworkUtility networkUtility = new NetworkUtility();
 			string ipAddress = "129.17.12.1";

@@ -7,8 +7,8 @@ namespace Code2.Data.GeoIP.Repositories;
 
 public class Repository<T> : ICsvRepository<T>
 {
-	private readonly List<T> _items = new List<T>();
-	private readonly object _lock = new object();
+	private readonly List<T> _items = new();
+	private readonly object _lock = new();
 
 	public void Add(IEnumerable<T> items)
 	{

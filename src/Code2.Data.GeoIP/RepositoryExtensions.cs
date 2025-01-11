@@ -5,7 +5,7 @@ using System;
 namespace Code2.Data.GeoIP;
 public static class RepositoryExtensions
 {
-	private static INetworkUtility _networkUtility = new NetworkUtility();
+	private static readonly NetworkUtility _networkUtility = new();
 
 	public static Tblock? GetBlock<Tblock>(this ICsvRepository<Tblock> repository, string ipAddress)
 			where Tblock : ISubnet

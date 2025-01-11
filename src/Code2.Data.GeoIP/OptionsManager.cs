@@ -1,4 +1,5 @@
 ﻿using Code2.Data.GeoIP.Internals;
+using Code2.Data.GeoIP.Models;
 using Code2.Tools.Csv.Repos;
 using System;
 using System.Collections.Generic;
@@ -29,9 +30,9 @@ public class OptionsManager : IOptionsManager
 	private CsvReposOptions _csvReposOptions;
 	private Dictionary<string, string?> _baseTypeNameMappings = new();
 
-	private const string _block_base_type_name = "BlockBase";
-	private const string _location_base_type_name = "LocationBase";
-	private const string _isp_base_type_name = "IspBase";
+	private const string _block_base_type_name = nameof(BlockBase);
+	private const string _location_base_type_name = nameof(LocationBase);
+	private const string _isp_base_type_name = nameof(IspBase);
 
 	public GeoIPOptions GetGeoIPOptions()
 		=> _geoIPOptions;
@@ -47,6 +48,7 @@ public class OptionsManager : IOptionsManager
 		_geoIPOptions = _serializer.DeserializerFromFileOrResource<GeoIPOptions>();
 		_geoIPOptions.MaxmindDownloadUrl ??= _maxmindOptions.DownloadUrl;
 		_geoIPOptions.UpdateIntervalInHours ??= _maxmindOptions.UpdateIntervalInHours;
+		_geoIPOptions.RetryIntervalInHours ??= _maxmindOptions.RetryIntervalInHours;
 		_geoIPOptions.Language ??= _maxmindOptions.DefaultLanguage;
 	}
 
@@ -122,15 +124,16 @@ public class OptionsManager : IOptionsManager
 		ISubnet[] data = (ISubnet[])e.Data;
 		foreach (var subnet in data)
 		{
-			var range = _networkUtility.GetRangeFromCidr(subnet.Network);
-			subnet.BeginAddress = range.begin;
-			subnet.EndAddress = range.end;
+			var (begin, end) = _networkUtility.GetRangeFromCidr(subnet.Network);
+			subnet.BeginAddress = begin;
+			subnet.EndAddress = end;
 		}
 	}
 
 	private CsvFileOptions CreateCsvFileOptions(MaxmindEdititionFileInfo fileInfo)
 	{
-		string fileName = fileInfo.Name.Contains("XX") ? fileInfo.Name.Replace("XX", _geoIPOptions.Language) : fileInfo.Name;
+		string fileName = fileInfo.Name;
+		if (fileInfo.BaseTypeName == _location_base_type_name) fileName = fileName.Replace("XX", _geoIPOptions.Language);
 		string filePath = _fileSystem.PathCombine(_geoIPOptions.DataDirectory!, fileName);
 		_baseTypeNameMappings.TryGetValue(fileInfo.BaseTypeName, out string? itemTypeName);
 		itemTypeName ??= fileInfo.TypeName;

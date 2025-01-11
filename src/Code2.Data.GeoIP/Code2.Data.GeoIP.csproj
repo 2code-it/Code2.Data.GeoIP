@@ -41,7 +41,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Code2.Tools.Csv.Repos" Version="0.3.10" />
+	  <PackageReference Include="Code2.Tools.Csv.Repos" Version="0.3.12" />
 	</ItemGroup>
 
 </Project>

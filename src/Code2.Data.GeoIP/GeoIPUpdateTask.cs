@@ -39,7 +39,7 @@ namespace Code2.Data.GeoIP
 			try
 			{
 				if (!DirectoryExists(outputPath)) DirectoryCreate(outputPath);
-				Dictionary<string, string> headers = GetHeadersOnlyAsync(Url, RequestHeaders).Result;
+				Dictionary<string, string> headers = HttpGetHeadersOnlyAsync(Url, RequestHeaders).Result;
 				if (!headers.TryGetValue(_http_header_last_modified, out string? remoteModifiedString))
 				{
 					return Result.Error("Last modified header not found");

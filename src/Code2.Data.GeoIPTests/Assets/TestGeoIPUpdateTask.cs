@@ -49,9 +49,9 @@ public class TestGeoIPUpdateTask : GeoIPUpdateTask
 	protected override void DirectoryCreate(string path)
 		=> MockDirectoryCreate(path);
 
-	protected override async Task<Dictionary<string, string>> GetHeadersOnlyAsync(string url, Dictionary<string, string>? requestHeaders = null)
+	protected override async Task<Dictionary<string, string>> HttpGetHeadersOnlyAsync(string url, Dictionary<string, string>? requestHeaders = null)
 		=> await MockGetHeadersOnlyAsync(url, requestHeaders);
 
-	protected override async Task<byte[]> GetByteArrayAsync(string url, Dictionary<string, string>? requestHeaders = null)
+	protected override async Task<byte[]> HttpGetByteArrayAsync(string url, Dictionary<string, string>? requestHeaders = null)
 		=> await MockGetByteArrayAsync(url, requestHeaders);
 }

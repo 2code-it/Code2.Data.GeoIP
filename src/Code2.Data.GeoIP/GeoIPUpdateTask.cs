@@ -64,11 +64,11 @@ namespace Code2.Data.GeoIP
 		{
 			try
 			{
-				byte[]? remoteSha256 = HashCheckDownload ? GetByteArrayAsync($"{Url}.sha256").Result : null;
+				byte[]? remoteSha256 = HashCheckDownload ? HttpGetByteArrayAsync($"{Url}.sha256").Result : null;
 				if (remoteSha256 is not null)
 				{
 					string remoteSha256String = Encoding.UTF8.GetString(remoteSha256);
-					string localSha256String = _fileSystem.FileGetSha256Hex(remoteSha256String);
+					string localSha256String = _fileSystem.FileGetSha256Hex(FilePath!);
 					if (remoteSha256String != localSha256String)
 					{
 						FileDelete(FilePath!);

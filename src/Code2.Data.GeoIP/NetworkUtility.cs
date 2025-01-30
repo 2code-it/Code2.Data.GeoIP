@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Net;
 
 namespace Code2.Data.GeoIP
@@ -8,7 +9,7 @@ namespace Code2.Data.GeoIP
 		public (UInt128 begin, UInt128 end) GetRangeFromCidr(string? cidr)
 		{
 			if (!IsValidCidr(cidr)) { return (0, 0); }
-			string[] networkParts = cidr!.Split('/');
+			string[] networkParts = cidr.Split('/');
 
 			if (!IsValidIPAddress(networkParts[0])) { return (0, 0); }
 			UInt128 start = GetIpNumberFromAddress(networkParts[0], out bool isMapped);
@@ -32,15 +33,13 @@ namespace Code2.Data.GeoIP
 		public bool IsValidIPAddress(string address)
 			=> IPAddress.TryParse(address, out _);
 
-		public bool IsValidCidr(string? cidr)
+		public bool IsValidCidr([NotNullWhen(true)] string? cidr)
 		{
 			if (string.IsNullOrEmpty(cidr)) return false;
 			string[] parts = cidr.Split('/');
 			if (parts.Length != 2) return false;
-			byte mask = byte.TryParse(parts[1], out byte byteValue) ? byteValue : (byte)0;
-			if (mask == 0) return false;
-			IPAddress? address = IPAddress.TryParse(parts[0], out IPAddress? ipValue) ? ipValue : null;
-			if (address is null) return false;
+			if (!byte.TryParse(parts[1], out byte mask)) return false;
+			if (!IPAddress.TryParse(parts[0], out IPAddress? address)) return false;
 			return address.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork ? mask <= 31 : mask <= 127;
 		}
 
